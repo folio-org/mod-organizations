@@ -7,12 +7,12 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
-import org.folio.config.ApplicationConfig;
+import io.vertx.core.Vertx;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.resource.Organizations;
 import org.folio.service.organization.OrganizationService;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -22,11 +22,11 @@ public class OrganizationApi extends BaseApi implements Organizations {
 
   private final String ORGANIZATIONS_LOCATION_PREFIX = "/organizations/organizations/%s";
 
-  private final OrganizationService organizationService;
+  @Autowired
+  private OrganizationService organizationService;
 
   public OrganizationApi() {
-    ApplicationContext ctx = new AnnotationConfigApplicationContext(ApplicationConfig.class);
-    organizationService = ctx.getBean(OrganizationService.class);
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override
