@@ -20,7 +20,7 @@ import io.vertx.core.Handler;
 
 public class OrganizationApi extends BaseApi implements Organizations {
 
-  private final String ORGANIZATIONS_LOCATION_PREFIX = "/organizations/organizations/%s";
+  private static final String ORGANIZATIONS_LOCATION_PREFIX = "/organizations/organizations/%s";
 
   @Autowired
   private OrganizationService organizationService;
