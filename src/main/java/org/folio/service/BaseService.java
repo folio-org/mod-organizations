@@ -81,7 +81,7 @@ public abstract class BaseService {
   }
 
   public HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {
-    return getHttpClient(okapiHeaders, false);
+    return getHttpClient(okapiHeaders, true);
   }
 
   /**

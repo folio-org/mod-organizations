@@ -30,8 +30,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
   }
 
   @Override
-  public void getOrganizationsOrganizations(int offset, int limit, String query, String lang, Map<String, String> okapiHeaders,
-      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getOrganizationsOrganizations(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     organizationService.getOrganizationCollection(offset, limit, query, lang, vertxContext, okapiHeaders)
       .thenAccept(organizations -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organizations))))
       .exceptionally(t -> handleErrorResponse(asyncResultHandler, t));
