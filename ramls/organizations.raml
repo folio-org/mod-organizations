@@ -25,7 +25,6 @@ traits:
 resourceTypes:
   collection: !include raml-util/rtypes/collection-with-json-response.raml
   collection-item: !include raml-util/rtypes/item-collection-with-json-response.raml
-  collection-get: !include raml-util/rtypes/collection-get-with-json-response.raml
 
 /organizations:
   /organizations:
@@ -33,12 +32,16 @@ resourceTypes:
     type:
       collection:
         exampleCollection: !include acq-models/mod-orgs/examples/organization_collection.sample
-        exampleItem: !include acq-models/mod-orgs/examples/organization_get.sample
+        exampleItem: !include acq-models/mod-orgs/examples/organization_post.sample
         schemaCollection: organizationCollection
         schemaItem: organization
     is: [validate]
     get:
-      is: [pageable, searchable: {description: "using CQL (indexes for organization)", example: "status==\"Active\""} ]
+      description: Get list of organizations
+      is: [
+        searchable: {description: "using CQL (indexes for organization)", example: "status==\"Active\""},
+        pageable
+      ]
     post:
       description: Post an organization
     /{id}:
@@ -51,10 +54,11 @@ resourceTypes:
           exampleItem: !include acq-models/mod-orgs/examples/organization_get.sample
           schema: organization
       is: [validate]
-      get:
-        description: Return an organization with given {id}
       put:
-        description: |
-          Update an organization with given {id}
-      delete:
-        description: Delete an organization with given {id}
+        description: Update an organization with id
+        body:
+          application/json:
+            example:
+              strict: false
+              value: !include acq-models/mod-orgs/examples/organization_post.sample
+            type: organization
