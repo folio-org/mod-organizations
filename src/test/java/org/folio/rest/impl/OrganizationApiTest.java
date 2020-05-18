@@ -144,7 +144,7 @@ public class OrganizationApiTest extends ApiTestBase {
     expected.put(ID, UUID.randomUUID()
       .toString());
 
-    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + ID_EXPECTED, expected.encode(), TEXT_PLAIN, 400);
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + ID_EXPECTED, expected.encode(), APPLICATION_JSON, 422);
 
     assertThat(MockServer.getInstance()
       .getAllServeEvents(), hasSize(0));
