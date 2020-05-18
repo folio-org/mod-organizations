@@ -70,7 +70,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
       .thenCompose(json -> VertxCompletableFuture.supplyBlockingAsync(context, () -> json.mapTo(OrganizationCollection.class)))
       .handle((collection, t) -> {
         client.closeClient();
-        if (t != null) {
+        if (Objects.nonNull(t)) {
           future.completeExceptionally(t.getCause());
         } else {
           future.complete(collection);
@@ -83,21 +83,24 @@ public class OrganizationStorageService extends BaseService implements Organizat
   @Override
   public CompletableFuture<Void> updateOrganizationById(String id, Organization entity, Context context,
       Map<String, String> headers) {
+    CompletableFuture<Void> future = new VertxCompletableFuture<>(context);
     if (isEmpty(entity.getId())) {
       entity.setId(id);
     } else if (!id.equals(entity.getId())) {
-      throw new HttpException(422, MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError());
+      future.completeExceptionally(new HttpException(422, MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
     }
     HttpClientInterface client = getHttpClient(headers);
-
-    return handlePutRequest(resourceByIdPath(ORGANIZATIONS, entity.getId()), JsonObject.mapFrom(entity), client, context, headers,
+    handlePutRequest(resourceByIdPath(ORGANIZATIONS, entity.getId()), JsonObject.mapFrom(entity), client, context, headers,
         logger).handle((org, t) -> {
           client.closeClient();
           if (Objects.nonNull(t)) {
-            throw new CompletionException(t.getCause());
+            future.completeExceptionally(t);
+          } else {
+            future.complete(null);
           }
           return null;
         });
+    return future;
   }
 
   @Override
