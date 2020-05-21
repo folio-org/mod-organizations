@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 public class ResourcePathResolver {
 
+  public static final String ACQUISITIONS_UNITS = "acquisitionsUnits";
+  public static final String ACQUISITIONS_MEMBERSHIPS = "acquisitionsMemberships";
   public static final String ORGANIZATIONS = "organizations";
   private static final Map<String, String> SUB_OBJECT_ITEM_APIS;
   private static final Map<String, String> SUB_OBJECT_COLLECTION_APIS;

@@ -11,6 +11,8 @@ import io.vertx.core.Vertx;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.resource.Organizations;
 import org.folio.service.organization.OrganizationService;
+import org.folio.service.protection.OrganizationsProtectionService;
+import org.folio.service.protection.ProtectionService;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 

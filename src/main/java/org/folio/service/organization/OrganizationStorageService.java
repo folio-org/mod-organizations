@@ -16,6 +16,9 @@ import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.service.BaseService;
+import org.folio.service.protection.AcquisitionUnitsService;
+import org.folio.service.protection.ProtectionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;
@@ -26,6 +29,9 @@ import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 public class OrganizationStorageService extends BaseService implements OrganizationService {
 
   private static final String GET_ORGANIZATIONS_BY_QUERY = resourcesPath(ORGANIZATIONS) + SEARCH_PARAMS;
+
+  private ProtectionService protectionService;
+  private AcquisitionUnitsService acquisitionUnitsService;
 
   @Override
   public CompletableFuture<Organization> createOrganization(Organization organization, Context context,
@@ -113,5 +119,15 @@ public class OrganizationStorageService extends BaseService implements Organizat
       }
       return null;
     });
+  }
+
+  @Autowired
+  public void setProtectionService(ProtectionService protectionService) {
+    this.protectionService = protectionService;
+  }
+
+  @Autowired
+  public void setAcquisitionUnitsService(AcquisitionUnitsService acquisitionUnitsService) {
+    this.acquisitionUnitsService = acquisitionUnitsService;
   }
 }
