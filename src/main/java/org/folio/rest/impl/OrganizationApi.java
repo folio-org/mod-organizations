@@ -11,8 +11,6 @@ import io.vertx.core.Vertx;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.resource.Organizations;
 import org.folio.service.organization.OrganizationService;
-import org.folio.service.protection.OrganizationsProtectionService;
-import org.folio.service.protection.ProtectionService;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,7 +48,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
   @Override
   public void getOrganizationsOrganizationsById(String id, String lang, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    organizationService.getOrganizationById(id, vertxContext, okapiHeaders)
+    organizationService.getOrganizationById(id, lang, vertxContext, okapiHeaders)
       .thenAccept(organization -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organization))))
       .exceptionally(t -> handleErrorResponse(asyncResultHandler, t));
   }

@@ -1,12 +1,17 @@
 package org.folio.rest.impl;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.folio.config.Constants.ID;
-import static org.folio.rest.impl.MockServer.ID_EXPECTED;
+import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
+import static org.folio.rest.impl.MockServer.FULL_PROTECTED_USER_ID;
+import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
 import static org.folio.rest.impl.MockServer.ID_INTERNAL_SERVER_ERROR;
 import static org.folio.rest.impl.MockServer.ID_NOT_FOUND;
 import static org.folio.rest.impl.MockServer.ISE_X_OKAPI_TENANT;
+import static org.folio.rest.impl.MockServer.READ_ONLY_USER_ID;
+import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
+import static org.folio.rest.impl.TestEntities.ORGANIZATION_NO_ACQ;
+import static org.folio.rest.impl.TestEntities.ORGANIZATION_RO_PROTECTED;
 import static org.folio.service.BaseService.SEARCH_PARAMS;
 import static wiremock.org.hamcrest.MatcherAssert.assertThat;
 import static wiremock.org.hamcrest.Matchers.equalTo;
@@ -14,10 +19,16 @@ import static wiremock.org.hamcrest.Matchers.hasSize;
 import static wiremock.org.hamcrest.Matchers.is;
 import static wiremock.org.hamcrest.Matchers.nullValue;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.folio.HttpStatus;
+import org.folio.rest.jaxrs.model.OrganizationCollection;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -26,27 +37,29 @@ import io.restassured.http.Headers;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class OrganizationApiTest extends ApiTestBase {
 
   private static final Logger logger = LoggerFactory.getLogger(OrganizationApiTest.class);
+  private static final List<TestEntities> permittedEntities = Arrays.asList(ORGANIZATION_NO_ACQ, ORGANIZATION_RO_PROTECTED);
+  private static final List<TestEntities> restrictedEntities = Collections.singletonList(ORGANIZATION_FULL_PROTECTED);
 
-  @ParameterizedTest
-  @EnumSource(TestEntities.class)
-  public void testPost(TestEntities e) {
-    logger.info("===== Verify POST " + e.name() + ": Successful =====");
+  @Test
+  public void testPost() {
+    logger.info("===== Verify POST : Successful =====");
 
-    JsonObject posted = e.getSample();
+    JsonObject posted = ORGANIZATION_NO_ACQ.getSample();
     assertThat(posted.getString(ID), nullValue());
-    JsonObject expected = e.getSample()
+    JsonObject expected = ORGANIZATION_NO_ACQ.getSample()
       .copy();
-    expected.put(ID, ID_EXPECTED);
+    expected.put(ID, ORGANIZATION_NO_ACQ.getId());
 
-    JsonObject actual = new JsonObject(verifyPostRequest(e.getUrl(), JsonObject.mapFrom(posted)
+    JsonObject actual = new JsonObject(verifyPostRequest(ORGANIZATION_NO_ACQ.getUrl(), JsonObject.mapFrom(posted)
       .encode()).getBody()
         .print());
 
-    assertThat(actual.getString(ID), is(ID_EXPECTED));
+    assertThat(actual.getString(ID), is(ORGANIZATION_NO_ACQ.getId()));
     assertThat(MockServer.getInstance()
       .getAllServeEvents(), hasSize(1));
   }
@@ -66,19 +79,40 @@ public class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
-  public void testGetById(TestEntities e) {
+  @MethodSource("getPermittedEntities")
+  public void testGetByIdReadOnlyOrNoAcqUnits(TestEntities e) {
     logger.info("===== Verify GET by ID " + e.name() + ": Successful =====");
 
     JsonObject expected = e.getSample();
-    expected.put(ID, ID_EXPECTED);
+    expected.put(ID, e.getId());
 
-    JsonObject actual = new JsonObject(verifyGetRequest(e.getUrl() + PATH_SEPARATOR + ID_EXPECTED).body()
-      .print());
+    JsonObject actual = new JsonObject(verifyGetRequest(e.getUrl() + PATH_SEPARATOR + e.getId(),
+      headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody().print());
 
     assertThat(actual, equalTo(expected));
-    assertThat(MockServer.getInstance()
-      .getAllServeEvents(), hasSize(1));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getRestrictedEntities")
+  public void testGetByIdProtectedWithValidMembership(TestEntities e) {
+    logger.info("===== Verify GET by ID full protected organization with full protected user membership: Successful =====");
+
+    JsonObject expected = e.getSample();
+    expected.put(ID, e.getId());
+
+    JsonObject actual = new JsonObject(verifyGetRequest(e.getUrl() + PATH_SEPARATOR + e.getId(),
+      headersForUser(FULL_PROTECTED_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody().print());
+
+    assertThat(actual, equalTo(expected));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getRestrictedEntities")
+  public void testGetByIdProtectedWithWrongMembership(TestEntities e) {
+    logger.info("===== Verify GET by ID full protected organization with read-only user membership: Forbidden =====");
+
+    verifyGetRequest(e.getUrl() + PATH_SEPARATOR + e.getId(),
+      headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, 403);
   }
 
   @ParameterizedTest
@@ -89,24 +123,80 @@ public class OrganizationApiTest extends ApiTestBase {
     verifyGetRequest(e.getUrl() + PATH_SEPARATOR + ID_NOT_FOUND, APPLICATION_JSON, 404);
   }
 
-  @ParameterizedTest
-  @EnumSource(TestEntities.class)
-  public void testGetByIdInternalServerError(TestEntities e) {
-    logger.info("===== Verify GET by ID " + e.name() + ": Internal Server Error =====");
+  @Test
+  public void testGetByIdInternalServerError() {
+    logger.info("===== Verify GET by ID : Internal Server Error =====");
 
-    verifyGetRequest(e.getUrl() + PATH_SEPARATOR + ID_INTERNAL_SERVER_ERROR, APPLICATION_JSON, 500);
+    verifyGetRequest(ORGANIZATION_NO_ACQ.getUrl() + PATH_SEPARATOR + ID_INTERNAL_SERVER_ERROR, APPLICATION_JSON, 500);
+  }
+
+  @Test
+  public void testGetCollectionWithReadOnlyMembership() {
+    logger.info("===== Verify GET collection with read-only membership: Successful (open for read entities collection) =====");
+
+    JsonObject expected = TestEntities.getOpenForReadEntitiesCollection();
+
+    JsonObject actual = new JsonObject(
+      verifyGetRequest(ORGANIZATION_NO_ACQ.getUrl(), headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+        .print());
+
+    assertThat(Objects.equals(actual, expected), is(true));
+  }
+
+  @Test
+  public void testGetCollectionWithProtectedMembership() {
+    logger.info("===== Verify GET collection with full-protected membership: Successful (all entities collection) =====");
+
+    JsonObject expected = TestEntities.getAllEntitiesCollection();
+
+    JsonObject actual = new JsonObject(
+      verifyGetRequest(ORGANIZATION_NO_ACQ.getUrl(), headersForUser(FULL_PROTECTED_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+        .print());
+
+    assertThat(Objects.equals(actual, expected), is(true));
   }
 
   @ParameterizedTest
   @EnumSource(TestEntities.class)
-  public void testGetByQuery(TestEntities e) {
+  public void testGetByQueryWithProtectedMembership(TestEntities e) {
     logger.info("===== Verify GET by ID " + e.name() + ": Successful =====");
 
     JsonObject expected = e.getCollection();
 
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
     JsonObject actual = new JsonObject(
-        verifyGetRequest(String.format(e.getUrl() + SEARCH_PARAMS, 0, 1, "&query=id==" + ID_EXPECTED, "en")).getBody()
-          .print());
+      verifyGetRequest(endpoint, headersForUser(FULL_PROTECTED_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+        .print());
+
+    assertThat(Objects.equals(actual, expected), is(true));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getPermittedEntities")
+  public void testGetByQueryOpenForReadEntities(TestEntities e) {
+    logger.info("===== Verify GET by ID " + e.name() + ": Successful =====");
+
+    JsonObject expected = e.getCollection();
+
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
+    JsonObject actual = new JsonObject(
+      verifyGetRequest(endpoint, headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+        .print());
+
+    assertThat(Objects.equals(actual, expected), is(true));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getRestrictedEntities")
+  public void testGetProtectedCollectionUserNotMember(TestEntities e) {
+    logger.info("===== Verify GET by ID protected Organization with read-only membership: Empty Collection =====");
+
+    JsonObject expected = JsonObject.mapFrom(new OrganizationCollection().withTotalRecords(0));
+
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
+    JsonObject actual = new JsonObject(
+      verifyGetRequest(endpoint, headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+        .print());
 
     assertThat(Objects.equals(actual, expected), is(true));
   }
@@ -116,8 +206,8 @@ public class OrganizationApiTest extends ApiTestBase {
   public void testGetByQueryInternalServerError(TestEntities e) {
     logger.info("===== Verify GET by query " + e.name() + ": Internal Server Error =====");
 
-    verifyGetRequest(String.format(e.getUrl() + SEARCH_PARAMS, 0, 1, "&query=id==" + ID_INTERNAL_SERVER_ERROR, "en"),
-        APPLICATION_JSON, 500);
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + ID_INTERNAL_SERVER_ERROR, "en");
+    verifyGetRequest(endpoint, headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, 500);
   }
 
   @ParameterizedTest
@@ -128,7 +218,7 @@ public class OrganizationApiTest extends ApiTestBase {
     JsonObject expected = e.getSample();
     expected.put(e.getUpdatedFieldName(), e.getUpdatedFieldValue());
 
-    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + ID_EXPECTED, JsonObject.mapFrom(expected)
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + ORGANIZATION_NO_ACQ_ID, JsonObject.mapFrom(expected)
       .encode());
 
     assertThat(MockServer.getInstance()
@@ -144,7 +234,7 @@ public class OrganizationApiTest extends ApiTestBase {
     expected.put(ID, UUID.randomUUID()
       .toString());
 
-    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + ID_EXPECTED, expected.encode(), APPLICATION_JSON, 422);
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), expected.encode(), APPLICATION_JSON, 422);
 
     assertThat(MockServer.getInstance()
       .getAllServeEvents(), hasSize(0));
@@ -157,10 +247,10 @@ public class OrganizationApiTest extends ApiTestBase {
 
     JsonObject entity = e.getSample();
     JsonObject expected = entity.copy();
-    expected.put(ID, ID_EXPECTED);
+    expected.put(ID, ORGANIZATION_NO_ACQ_ID);
     assertThat(entity.getString(ID), nullValue());
 
-    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + ID_EXPECTED, JsonObject.mapFrom(entity)
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + ORGANIZATION_NO_ACQ_ID, JsonObject.mapFrom(entity)
       .encode());
 
     assertThat(MockServer.getInstance()
@@ -169,7 +259,7 @@ public class OrganizationApiTest extends ApiTestBase {
       .getAllServeEvents()
       .get(0)
       .getRequest()
-      .getBodyAsString()).getString(ID), is(ID_EXPECTED));
+      .getBodyAsString()).getString(ID), is(ORGANIZATION_NO_ACQ_ID));
   }
 
   @ParameterizedTest
@@ -205,7 +295,7 @@ public class OrganizationApiTest extends ApiTestBase {
   public void testDeleteOrganizationById(TestEntities e) {
     logger.info("===== Verify DELETE by ID " + e.name() + ": Successful =====");
 
-    verifyDeleteRequest(e.getUrl() + PATH_SEPARATOR + ID_EXPECTED);
+    verifyDeleteRequest(e.getUrl() + PATH_SEPARATOR + ORGANIZATION_NO_ACQ_ID);
 
     assertThat(MockServer.getInstance()
       .getAllServeEvents(), hasSize(1));
@@ -231,5 +321,17 @@ public class OrganizationApiTest extends ApiTestBase {
 
     assertThat(MockServer.getInstance()
       .getAllServeEvents(), hasSize(1));
+  }
+
+  private static Headers headersForUser(String userId) {
+    return Headers.headers(X_OKAPI_URL, X_OKAPI_TENANT, new Header(OKAPI_USERID_HEADER, userId));
+  }
+
+  private static Stream<TestEntities> getPermittedEntities() {
+    return permittedEntities.stream();
+  }
+
+  private static Stream<TestEntities> getRestrictedEntities() {
+    return restrictedEntities.stream();
   }
 }

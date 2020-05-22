@@ -15,15 +15,16 @@ import org.folio.service.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 @Service
-public class OrganizationsProtectionService extends BaseService implements ProtectionService {
-
-  public static final String ACQUISITIONS_UNIT_IDS = "acqUnitIds";
-
+public class ProtectionServiceImpl extends BaseService implements ProtectionService {
   private AcquisitionUnitsService acquisitionUnitsService;
   private final List<AcquisitionsUnit> fetchedUnits = new ArrayList<>();
 
@@ -80,11 +81,14 @@ public class OrganizationsProtectionService extends BaseService implements Prote
 
   private CompletableFuture<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, String lang, Context context, Map<String, String> headers) {
     String query = String.format("userId==%s AND %s", currentUserId, convertIdsToCqlQuery(unitIdsAssignedToOrg, ACQUISITIONS_UNIT_ID, true));
-    return acquisitionUnitsService.getAcquisitionsUnitsMemberships(query, 0, 0, lang, context, headers)
+    return acquisitionUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, lang, context, headers)
       .thenAccept(unit -> {
         if (unit.getTotalRecords() == 0) {
           throw new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS);
         }
+      })
+      .exceptionally(t -> {
+        throw new CompletionException(t);
       });
   }
 

@@ -8,6 +8,9 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.folio.config.Constants.OKAPI_URL;
 import static org.folio.rest.RestVerticle.OKAPI_HEADER_TENANT;
+import static org.folio.util.ResourcePathResolver.ACQUISITIONS_MEMBERSHIPS;
+import static org.folio.util.ResourcePathResolver.ACQUISITIONS_UNITS;
+import static org.folio.util.ResourcePathResolver.resourcesPath;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -48,10 +51,16 @@ public abstract class BaseService {
   public static final String ACTIVE_UNITS_CQL = IS_DELETED_PROP + "==false";
   private static final Pattern CQL_SORT_BY_PATTERN = Pattern.compile("(.*)(\\ssortBy\\s.*)", Pattern.CASE_INSENSITIVE);
   public final Logger logger = LoggerFactory.getLogger(this.getClass());
+  public static final String ACQUISITIONS_UNIT_IDS = "acqUnitIds";
+  public static final String NO_ACQ_UNIT_ASSIGNED_CQL = "cql.allRecords=1 not " + ACQUISITIONS_UNIT_IDS + " <> []";
+  public static final String GET_UNITS_BY_QUERY = resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS;
+  public static final String GET_UNITS_MEMBERSHIPS_BY_QUERY = resourcesPath(ACQUISITIONS_MEMBERSHIPS) + SEARCH_PARAMS;
 
   public static String buildQuery(String query, Logger logger) {
     return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query, logger);
   }
+
+
 
   /**
    * @param query  string representing CQL query
@@ -237,7 +246,7 @@ public abstract class BaseService {
     return id;
   }
 
-  public String combineCqlExpressions(String operator, String... expressions) {
+  public static String combineCqlExpressions(String operator, String... expressions) {
     if (ArrayUtils.isEmpty(expressions)) {
       return EMPTY;
     }
@@ -261,11 +270,11 @@ public abstract class BaseService {
    * @param ids list of id's
    * @return String representing CQL query to get records by id's
    */
-  public String convertIdsToCqlQuery(Collection<String> ids) {
+  public static String convertIdsToCqlQuery(Collection<String> ids) {
     return convertIdsToCqlQuery(ids, ID, true);
   }
 
-  public String convertIdsToCqlQuery(Collection<String> values, String fieldName, boolean strictMatch) {
+  public static String convertIdsToCqlQuery(Collection<String> values, String fieldName, boolean strictMatch) {
     String prefix = fieldName + (strictMatch ? "==(" : "=(");
     return StreamEx.of(values).joining(" or ", prefix, ")");
   }
