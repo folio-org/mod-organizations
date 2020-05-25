@@ -56,7 +56,7 @@ public class MockServer {
   public static final String ID_INTERNAL_SERVER_ERROR = "96e79e5a-c379-4a5a-8244-d6df0342e21c";
   public static final String ACQ_UNIT_READ_ONLY_ID = "6b982ffe-8efd-4690-8168-0c773b49cde1";
   public static final String ACQ_UNIT_FULL_PROTECTED_ID = "e68c18fc-833f-494e-9a0e-b236eb4b310b";
-  public static final String USER_NO_MEMBERSHIP_ID = "480dba68-ee84-4b9c-a374-7e824fc49227";
+  public static final String USER_NO_MEMBERSHIP_ID = "6b4be232-5ad9-47a6-80b1-8c1acabd6212";
   public static final String USER_READ_ONLY_MEMBERSHIP_ID = "6e076ac5-371e-4462-af79-187c54fe70de";
   public static final String USER_FULL_PROTECTED_MEMBERSHIP_ID = "480dba68-ee84-4b9c-a374-7e824fc49227";
   public static final String ISE_X_OKAPI_TENANT = "ISE";
