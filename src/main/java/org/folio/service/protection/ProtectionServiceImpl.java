@@ -25,12 +25,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProtectionServiceImpl extends BaseService implements ProtectionService {
-  private AcquisitionUnitsService acquisitionUnitsService;
+  private AcquisitionsUnitsService acquisitionsUnitsService;
   private final List<AcquisitionsUnit> fetchedUnits = new ArrayList<>();
 
   @Autowired
-  public void setAcquisitionUnitsService(AcquisitionUnitsService acquisitionUnitsService) {
-    this.acquisitionUnitsService = acquisitionUnitsService;
+  public void setAcquisitionsUnitsService(AcquisitionsUnitsService acquisitionsUnitsService) {
+    this.acquisitionsUnitsService = acquisitionsUnitsService;
   }
 
   @Override
@@ -67,7 +67,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
     }
 
     String query = combineCqlExpressions("and", ALL_UNITS_CQL, convertIdsToCqlQuery(unitIds));
-    return acquisitionUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
+    return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
       .thenApply(acquisitionsUnitCollection -> {
         List<AcquisitionsUnit> acquisitionsUnits = acquisitionsUnitCollection.getAcquisitionsUnits();
         fetchedUnits.addAll(acquisitionsUnits);
@@ -81,7 +81,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
 
   private CompletableFuture<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, String lang, Context context, Map<String, String> headers) {
     String query = String.format("userId==%s AND %s", currentUserId, convertIdsToCqlQuery(unitIdsAssignedToOrg, ACQUISITIONS_UNIT_ID, true));
-    return acquisitionUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, lang, context, headers)
+    return acquisitionsUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, lang, context, headers)
       .thenAccept(unit -> {
         if (unit.getTotalRecords() == 0) {
           throw new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS);

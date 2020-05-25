@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 @Service
-public class AcquisitionUnitServiceImpl extends BaseService implements AcquisitionUnitsService {
+public class AcquisitionsUnitsServiceImpl extends BaseService implements AcquisitionsUnitsService {
 
   @Override
   public CompletableFuture<AcquisitionsUnitCollection> getAcquisitionsUnits(String query, int offset, int limit, String lang, Context context, Map<String, String> headers) {

@@ -19,7 +19,7 @@ import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.service.BaseService;
-import org.folio.service.protection.AcquisitionUnitsService;
+import org.folio.service.protection.AcquisitionsUnitsService;
 import org.folio.service.protection.ProtectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
   public static final String GET_ORGANIZATIONS_BY_QUERY = resourcesPath(ORGANIZATIONS) + SEARCH_PARAMS;
 
   private ProtectionService protectionService;
-  private AcquisitionUnitsService acquisitionUnitsService;
+  private AcquisitionsUnitsService acquisitionsUnitsService;
 
   @Override
   public CompletableFuture<Organization> createOrganization(Organization organization, Context context,
@@ -82,7 +82,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
       Context context, Map<String, String> headers) {
     CompletableFuture<OrganizationCollection> future = new VertxCompletableFuture<>(context);
     HttpClientInterface client = getHttpClient(headers);
-    acquisitionUnitsService.buildAcqUnitsCqlClause(query, offset, limit, lang, context, headers)
+    acquisitionsUnitsService.buildAcqUnitsCqlClause(query, offset, limit, lang, context, headers)
       .thenCompose(clause -> {
         String endpoint = StringUtils.isEmpty(query) ?
           String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(clause, logger), lang) :
@@ -143,7 +143,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
   }
 
   @Autowired
-  public void setAcquisitionUnitsService(AcquisitionUnitsService acquisitionUnitsService) {
-    this.acquisitionUnitsService = acquisitionUnitsService;
+  public void setAcquisitionsUnitsService(AcquisitionsUnitsService acquisitionsUnitsService) {
+    this.acquisitionsUnitsService = acquisitionsUnitsService;
   }
 }
