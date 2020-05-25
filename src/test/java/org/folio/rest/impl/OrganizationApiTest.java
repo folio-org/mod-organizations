@@ -3,12 +3,13 @@ package org.folio.rest.impl;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.folio.config.Constants.ID;
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
-import static org.folio.rest.impl.MockServer.FULL_PROTECTED_USER_ID;
+import static org.folio.rest.impl.MockServer.USER_FULL_PROTECTED_MEMBERSHIP_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
 import static org.folio.rest.impl.MockServer.ID_INTERNAL_SERVER_ERROR;
 import static org.folio.rest.impl.MockServer.ID_NOT_FOUND;
 import static org.folio.rest.impl.MockServer.ISE_X_OKAPI_TENANT;
-import static org.folio.rest.impl.MockServer.READ_ONLY_USER_ID;
+import static org.folio.rest.impl.MockServer.USER_NO_MEMBERSHIP_ID;
+import static org.folio.rest.impl.MockServer.USER_READ_ONLY_MEMBERSHIP_ID;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_NO_ACQ;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_RO_PROTECTED;
@@ -79,7 +80,7 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @MethodSource("getPermittedEntities")
+  @MethodSource("getOpenForReadEntities")
   void testGetByIdReadOnlyOrNoAcqUnits(TestEntities e) {
     logger.info("===== Verify GET by ID " + e.name() + ": Successful =====");
 
@@ -87,13 +88,16 @@ class OrganizationApiTest extends ApiTestBase {
     expected.put(ID, e.getId());
 
     JsonObject actual = new JsonObject(verifyGetRequest(e.getUrl() + PATH_SEPARATOR + e.getId(),
-      headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody().print());
+      headersForUser(USER_NO_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody().print());
+    assertThat(actual, equalTo(expected));
 
+    actual = new JsonObject(verifyGetRequest(e.getUrl() + PATH_SEPARATOR + e.getId(),
+      headersForUser(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody().print());
     assertThat(actual, equalTo(expected));
   }
 
   @ParameterizedTest
-  @MethodSource("getRestrictedEntities")
+  @MethodSource("getFullProtectedEntities")
   void testGetByIdProtectedWithValidMembership(TestEntities e) {
     logger.info("===== Verify GET by ID full protected organization with full protected user membership: Successful =====");
 
@@ -101,18 +105,21 @@ class OrganizationApiTest extends ApiTestBase {
     expected.put(ID, e.getId());
 
     JsonObject actual = new JsonObject(verifyGetRequest(e.getUrl() + PATH_SEPARATOR + e.getId(),
-      headersForUser(FULL_PROTECTED_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody().print());
+      headersForUser(USER_FULL_PROTECTED_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody().print());
 
     assertThat(actual, equalTo(expected));
   }
 
   @ParameterizedTest
-  @MethodSource("getRestrictedEntities")
+  @MethodSource("getFullProtectedEntities")
   void testGetByIdProtectedWithWrongMembership(TestEntities e) {
     logger.info("===== Verify GET by ID full protected organization with read-only user membership: Forbidden =====");
 
     verifyGetRequest(e.getUrl() + PATH_SEPARATOR + e.getId(),
-      headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, 403);
+      headersForUser(USER_NO_MEMBERSHIP_ID), APPLICATION_JSON, 403);
+
+    verifyGetRequest(e.getUrl() + PATH_SEPARATOR + e.getId(),
+      headersForUser(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, 403);
   }
 
   @ParameterizedTest
@@ -131,13 +138,26 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @Test
+  void testGetCollectionWithNoMembership() {
+    logger.info("===== Verify GET collection with read-only membership: Successful (open for read entities collection) =====");
+
+    JsonObject expected = TestEntities.getOpenForReadEntitiesCollection();
+
+    JsonObject actual = new JsonObject(
+      verifyGetRequest(ORGANIZATION_NO_ACQ.getUrl(), headersForUser(USER_NO_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+        .print());
+
+    assertThat(Objects.equals(actual, expected), is(true));
+  }
+
+  @Test
   void testGetCollectionWithReadOnlyMembership() {
     logger.info("===== Verify GET collection with read-only membership: Successful (open for read entities collection) =====");
 
     JsonObject expected = TestEntities.getOpenForReadEntitiesCollection();
 
     JsonObject actual = new JsonObject(
-      verifyGetRequest(ORGANIZATION_NO_ACQ.getUrl(), headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+      verifyGetRequest(ORGANIZATION_NO_ACQ.getUrl(), headersForUser(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
 
     assertThat(Objects.equals(actual, expected), is(true));
@@ -150,7 +170,7 @@ class OrganizationApiTest extends ApiTestBase {
     JsonObject expected = TestEntities.getAllEntitiesCollection();
 
     JsonObject actual = new JsonObject(
-      verifyGetRequest(ORGANIZATION_NO_ACQ.getUrl(), headersForUser(FULL_PROTECTED_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+      verifyGetRequest(ORGANIZATION_NO_ACQ.getUrl(), headersForUser(USER_FULL_PROTECTED_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
 
     assertThat(Objects.equals(actual, expected), is(true));
@@ -165,14 +185,14 @@ class OrganizationApiTest extends ApiTestBase {
 
     String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
     JsonObject actual = new JsonObject(
-      verifyGetRequest(endpoint, headersForUser(FULL_PROTECTED_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+      verifyGetRequest(endpoint, headersForUser(USER_FULL_PROTECTED_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
 
     assertThat(Objects.equals(actual, expected), is(true));
   }
 
   @ParameterizedTest
-  @MethodSource("getPermittedEntities")
+  @MethodSource("getOpenForReadEntities")
   void testGetByQueryOpenForReadEntities(TestEntities e) {
     logger.info("===== Verify GET by ID " + e.name() + ": Successful =====");
 
@@ -180,22 +200,37 @@ class OrganizationApiTest extends ApiTestBase {
 
     String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
     JsonObject actual = new JsonObject(
-      verifyGetRequest(endpoint, headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+      verifyGetRequest(endpoint, headersForUser(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
 
     assertThat(Objects.equals(actual, expected), is(true));
   }
 
   @ParameterizedTest
-  @MethodSource("getRestrictedEntities")
-  void testGetProtectedCollectionUserNotMember(TestEntities e) {
+  @MethodSource("getFullProtectedEntities")
+  void testGetProtectedCollectionNoMembership(TestEntities e) {
     logger.info("===== Verify GET by ID protected Organization with read-only membership: Empty Collection =====");
 
     JsonObject expected = JsonObject.mapFrom(new OrganizationCollection().withTotalRecords(0));
 
     String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
     JsonObject actual = new JsonObject(
-      verifyGetRequest(endpoint, headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+      verifyGetRequest(endpoint, headersForUser(USER_NO_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+        .print());
+
+    assertThat(Objects.equals(actual, expected), is(true));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getFullProtectedEntities")
+  void testGetProtectedCollectionReadOnlyMembership(TestEntities e) {
+    logger.info("===== Verify GET by ID protected Organization with read-only membership: Empty Collection =====");
+
+    JsonObject expected = JsonObject.mapFrom(new OrganizationCollection().withTotalRecords(0));
+
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
+    JsonObject actual = new JsonObject(
+      verifyGetRequest(endpoint, headersForUser(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
 
     assertThat(Objects.equals(actual, expected), is(true));
@@ -207,7 +242,7 @@ class OrganizationApiTest extends ApiTestBase {
     logger.info("===== Verify GET by query " + e.name() + ": Internal Server Error =====");
 
     String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + ID_INTERNAL_SERVER_ERROR, "en");
-    verifyGetRequest(endpoint, headersForUser(READ_ONLY_USER_ID), APPLICATION_JSON, 500);
+    verifyGetRequest(endpoint, headersForUser(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, 500);
   }
 
   @ParameterizedTest
@@ -327,11 +362,11 @@ class OrganizationApiTest extends ApiTestBase {
     return Headers.headers(X_OKAPI_URL, X_OKAPI_TENANT, new Header(OKAPI_USERID_HEADER, userId));
   }
 
-  private static Stream<TestEntities> getPermittedEntities() {
+  private static Stream<TestEntities> getOpenForReadEntities() {
     return permittedEntities.stream();
   }
 
-  private static Stream<TestEntities> getRestrictedEntities() {
+  private static Stream<TestEntities> getFullProtectedEntities() {
     return restrictedEntities.stream();
   }
 }

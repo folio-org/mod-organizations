@@ -2,8 +2,8 @@ package org.folio.rest.impl;
 
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_FULL_PROTECTED_ID;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_READ_ONLY_ID;
-import static org.folio.rest.impl.MockServer.FULL_PROTECTED_USER_ID;
-import static org.folio.rest.impl.MockServer.READ_ONLY_USER_ID;
+import static org.folio.rest.impl.MockServer.USER_FULL_PROTECTED_MEMBERSHIP_ID;
+import static org.folio.rest.impl.MockServer.USER_READ_ONLY_MEMBERSHIP_ID;
 
 import io.vertx.core.json.JsonObject;
 import org.folio.rest.acq.model.AcquisitionsUnit;
@@ -15,8 +15,8 @@ import java.util.Collections;
 import java.util.UUID;
 
 public enum MockAcqUnits {
-  READ_ONLY(ACQ_UNIT_READ_ONLY_ID, READ_ONLY_USER_ID, false, true, false, true, true),
-  FULL_PROTECTED(ACQ_UNIT_FULL_PROTECTED_ID, FULL_PROTECTED_USER_ID, false, true, true, true, true);
+  READ_ONLY(ACQ_UNIT_READ_ONLY_ID, USER_READ_ONLY_MEMBERSHIP_ID, false, true, false, true, true),
+  FULL_PROTECTED(ACQ_UNIT_FULL_PROTECTED_ID, USER_FULL_PROTECTED_MEMBERSHIP_ID, false, true, true, true, true);
 
   String acqUnitId;
   String userId;

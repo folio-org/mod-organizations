@@ -56,8 +56,9 @@ public class MockServer {
   public static final String ID_INTERNAL_SERVER_ERROR = "96e79e5a-c379-4a5a-8244-d6df0342e21c";
   public static final String ACQ_UNIT_READ_ONLY_ID = "6b982ffe-8efd-4690-8168-0c773b49cde1";
   public static final String ACQ_UNIT_FULL_PROTECTED_ID = "e68c18fc-833f-494e-9a0e-b236eb4b310b";
-  public static final String READ_ONLY_USER_ID = "6e076ac5-371e-4462-af79-187c54fe70de";
-  public static final String FULL_PROTECTED_USER_ID = "480dba68-ee84-4b9c-a374-7e824fc49227";
+  public static final String USER_NO_MEMBERSHIP_ID = "480dba68-ee84-4b9c-a374-7e824fc49227";
+  public static final String USER_READ_ONLY_MEMBERSHIP_ID = "6e076ac5-371e-4462-af79-187c54fe70de";
+  public static final String USER_FULL_PROTECTED_MEMBERSHIP_ID = "480dba68-ee84-4b9c-a374-7e824fc49227";
   public static final String ISE_X_OKAPI_TENANT = "ISE";
   private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
   public static WireMockServer wireMockServer;
@@ -157,7 +158,15 @@ public class MockServer {
       wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnitMembership(unit.userId, unit.acqUnitId)))
         .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(unit.getAcqUnitMembershipCollection())
           .withStatus(200)));
+
+      wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnitMembership(USER_NO_MEMBERSHIP_ID, unit.acqUnitId)))
+        .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(MockAcqUnits.getEmptyAcqUnitMembershipCollection())
+          .withStatus(200)));
     }
+
+    wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnitMembership(USER_NO_MEMBERSHIP_ID)))
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(MockAcqUnits.getEmptyAcqUnitMembershipCollection())
+        .withStatus(200)));
 
     wireMockServer.stubFor(get(urlEqualTo(urlOpenForReadAcqUnit()))
       .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(READ_ONLY.getAcqUnitsCollection())
