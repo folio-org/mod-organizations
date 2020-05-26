@@ -34,7 +34,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   }
 
   @Override
-  public CompletableFuture<Void> isOperationRestricted(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
+  public CompletableFuture<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
     if (CollectionUtils.isNotEmpty(unitIds)) {
       return getUnitsByIds(unitIds, lang, context, headers)
         .thenCompose(units -> {
