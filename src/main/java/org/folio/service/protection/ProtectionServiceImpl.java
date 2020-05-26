@@ -44,7 +44,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   }
 
   @Override
-  public CompletableFuture<Void> isOperationRestricted(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
+  public CompletableFuture<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
     if (CollectionUtils.isNotEmpty(unitIds)) {
       return getUnitsByIds(unitIds, lang, context, headers)
         .thenCompose(units -> {
@@ -72,7 +72,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
 
     return VertxCompletableFuture.runAsync(context, () -> verifyUserHasManagePermission(updatedAcqUnitIds, currentAcqUnitIds, getProvidedPermissions(headers)))
     .thenCompose(ok -> verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), lang, context, headers))
-    .thenCompose(ok -> isOperationRestricted(currentAcqUnitIds, Collections.singleton(UPDATE), lang, context, headers));
+    .thenCompose(ok -> checkOperationsRestrictions(currentAcqUnitIds, Collections.singleton(UPDATE), lang, context, headers));
   }
 
   private CompletableFuture<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, String lang, Context context, Map<String, String> headers) {

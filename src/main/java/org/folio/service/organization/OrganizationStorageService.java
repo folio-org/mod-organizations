@@ -60,7 +60,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
 
     handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), client, context, headers, logger)
       .thenApply(json -> json.mapTo(Organization.class))
-      .thenApply(organization -> protectionService.isOperationRestricted(organization.getAcqUnitIds(), Collections.singleton(READ), lang, context, headers)
+      .thenApply(organization -> protectionService.checkOperationsRestrictions(organization.getAcqUnitIds(), Collections.singleton(READ), lang, context, headers)
         .handle((res, t) -> {
           client.closeClient();
           if (Objects.nonNull(t)) {
