@@ -18,7 +18,7 @@ import static org.folio.rest.impl.MockAcqUnits.FULL_PROTECTED;
 import static org.folio.rest.impl.MockAcqUnits.READ_ONLY;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_NO_ACQ;
-import static org.folio.rest.impl.TestEntities.ORGANIZATION_RO_PROTECTED;
+import static org.folio.rest.impl.TestEntities.ORGANIZATION_READ_PROTECTED;
 import static org.folio.service.BaseService.ACQUISITIONS_UNIT_ID;
 import static org.folio.service.BaseService.ACQUISITIONS_UNIT_IDS;
 import static org.folio.service.BaseService.ACTIVE_UNITS_CQL;
@@ -51,13 +51,16 @@ public class MockServer {
 
   public static final String ORGANIZATION_NO_ACQ_ID = "1614c7e5-7b3e-4cb3-8fb9-48fe85c7b47f";
   public static final String ORGANIZATION_READ_ONLY_ID = "874225ae-e3f5-4666-ae19-b35709ff0ee9";
+  public static final String ORGANIZATION_UPDATE_ONLY_ID = "caa81a86-5829-45b7-b320-ca0d27abf9d5";
   public static final String ORGANIZATION_FULL_PROTECTED_ID = "9985ec57-91cb-4588-9fab-089859a017a5";
   public static final String ID_NOT_FOUND = "f394664e-849d-4213-96c4-2795f772ae3a";
   public static final String ID_INTERNAL_SERVER_ERROR = "96e79e5a-c379-4a5a-8244-d6df0342e21c";
   public static final String ACQ_UNIT_READ_ONLY_ID = "6b982ffe-8efd-4690-8168-0c773b49cde1";
+  public static final String ACQ_UNIT_UPDATE_ONLY_ID = "aa0ec4e1-782f-45f6-a6f3-8e6b6c00599c";
   public static final String ACQ_UNIT_FULL_PROTECTED_ID = "e68c18fc-833f-494e-9a0e-b236eb4b310b";
   public static final String USER_NO_MEMBERSHIP_ID = "6b4be232-5ad9-47a6-80b1-8c1acabd6212";
   public static final String USER_READ_ONLY_MEMBERSHIP_ID = "6e076ac5-371e-4462-af79-187c54fe70de";
+  public static final String USER_UPDATE_ONLY_MEMBERSHIP_ID = "6bf43c5a-6513-4ce0-a3bd-ac447b222094";
   public static final String USER_FULL_PROTECTED_MEMBERSHIP_ID = "480dba68-ee84-4b9c-a374-7e824fc49227";
   public static final String ISE_X_OKAPI_TENANT = "ISE";
   private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
@@ -189,11 +192,11 @@ public class MockServer {
         .withStatus(200)));
 
     wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_READ_ONLY_ID, READ_ONLY.acqUnitId))
-      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_RO_PROTECTED.getCollection().encode())
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_READ_PROTECTED.getCollection().encode())
         .withStatus(200)));
 
     wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_READ_ONLY_ID, FULL_PROTECTED.acqUnitId, READ_ONLY.acqUnitId))
-      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_RO_PROTECTED.getCollection().encode())
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_READ_PROTECTED.getCollection().encode())
         .withStatus(200)));
 
     wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_FULL_PROTECTED_ID, READ_ONLY.acqUnitId))

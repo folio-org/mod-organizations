@@ -103,25 +103,32 @@ public class OrganizationStorageService extends BaseService implements Organizat
   }
 
   @Override
-  public CompletableFuture<Void> updateOrganizationById(String id, Organization entity, Context context,
+  public CompletableFuture<Void> updateOrganizationById(String id, Organization updatedOrganization, String lang, Context context,
       Map<String, String> headers) {
     CompletableFuture<Void> future = new VertxCompletableFuture<>(context);
-    if (isEmpty(entity.getId())) {
-      entity.setId(id);
-    } else if (!id.equals(entity.getId())) {
+    if (isEmpty(updatedOrganization.getId())) {
+      updatedOrganization.setId(id);
+    } else if (!id.equals(updatedOrganization.getId())) {
       future.completeExceptionally(new HttpException(422, MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
     }
     HttpClientInterface client = getHttpClient(headers);
-    handlePutRequest(resourceByIdPath(ORGANIZATIONS, entity.getId()), JsonObject.mapFrom(entity), client, context, headers,
+    handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), client, context, headers, logger)
+      .thenApply(existingOrganizationJson -> existingOrganizationJson.mapTo(Organization.class))
+      .thenCompose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, lang, context, headers))
+      .thenAccept(ok -> handlePutRequest(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), client, context, headers,
         logger).handle((org, t) -> {
-          client.closeClient();
-          if (Objects.nonNull(t)) {
-            future.completeExceptionally(t);
-          } else {
-            future.complete(null);
-          }
-          return null;
-        });
+        client.closeClient();
+        if (Objects.nonNull(t)) {
+          future.completeExceptionally(t);
+        } else {
+          future.complete(null);
+        }
+        return null;
+      }))
+    .exceptionally(t -> {
+      future.completeExceptionally(t.getCause());
+      return null;
+    });
     return future;
   }
 

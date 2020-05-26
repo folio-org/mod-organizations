@@ -53,7 +53,7 @@ public interface OrganizationService {
    * @param headers OKAPI headers
    * @return void completable future
    */
-  CompletableFuture<Void> updateOrganizationById(String id, Organization entity, Context context, Map<String, String> headers);
+  CompletableFuture<Void> updateOrganizationById(String id, Organization entity, String lang, Context context, Map<String, String> headers);
 
   /**
    * This method deletes {@link Organization} by ID

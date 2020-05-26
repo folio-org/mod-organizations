@@ -2,9 +2,11 @@ package org.folio.rest.impl;
 
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_FULL_PROTECTED_ID;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_READ_ONLY_ID;
+import static org.folio.rest.impl.MockServer.ACQ_UNIT_UPDATE_ONLY_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_FULL_PROTECTED_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_READ_ONLY_ID;
+import static org.folio.rest.impl.MockServer.ORGANIZATION_UPDATE_ONLY_ID;
 import static org.folio.util.ResourcePathResolver.ORGANIZATIONS;
 
 import java.util.Arrays;
@@ -18,11 +20,13 @@ import io.vertx.core.json.JsonObject;
 
 public enum TestEntities {
   ORGANIZATION_NO_ACQ(ORGANIZATION_NO_ACQ_ID, "organizations/organizations", ORGANIZATIONS, getEntity(), getEntityCollection(), Organization.class, "code",
-      "TST-ORG"),
-  ORGANIZATION_RO_PROTECTED(ORGANIZATION_READ_ONLY_ID, "organizations/organizations", ORGANIZATIONS, getEntity(ACQ_UNIT_READ_ONLY_ID), getEntityCollection(ACQ_UNIT_READ_ONLY_ID), Organization.class, "code",
-    "TST-ORG"),
+      "TST-ORG-NO-ACQ"),
+  ORGANIZATION_READ_PROTECTED(ORGANIZATION_READ_ONLY_ID, "organizations/organizations", ORGANIZATIONS, getEntity(ACQ_UNIT_READ_ONLY_ID), getEntityCollection(ACQ_UNIT_READ_ONLY_ID), Organization.class, "code",
+    "TST-ORG-READ-ACQ"),
+  ORGANIZATION_UPDATE_PROTECTED(ORGANIZATION_UPDATE_ONLY_ID, "organizations/organizations", ORGANIZATIONS, getEntity(ACQ_UNIT_UPDATE_ONLY_ID), getEntityCollection(ACQ_UNIT_UPDATE_ONLY_ID), Organization.class, "code",
+    "TST-ORG-UPDATE-ACQ"),
   ORGANIZATION_FULL_PROTECTED(ORGANIZATION_FULL_PROTECTED_ID, "organizations/organizations", ORGANIZATIONS, getEntity(ACQ_UNIT_FULL_PROTECTED_ID), getEntityCollection(ACQ_UNIT_FULL_PROTECTED_ID), Organization.class, "code",
-    "TST-ORG");
+    "TST-ORG-FULL-PROTECT");
 
   String id;
   String resource;
@@ -70,7 +74,7 @@ public enum TestEntities {
     return JsonObject.mapFrom(new OrganizationCollection()
       .withOrganizations(
         Arrays.asList(ORGANIZATION_NO_ACQ.getSample().mapTo(Organization.class),
-          ORGANIZATION_RO_PROTECTED.getSample().mapTo(Organization.class)))
+          ORGANIZATION_READ_PROTECTED.getSample().mapTo(Organization.class)))
       .withTotalRecords(2));
   }
 
@@ -78,7 +82,7 @@ public enum TestEntities {
     return JsonObject.mapFrom(new OrganizationCollection()
       .withOrganizations(
         Arrays.asList(ORGANIZATION_NO_ACQ.getSample().mapTo(Organization.class),
-          ORGANIZATION_RO_PROTECTED.getSample().mapTo(Organization.class),
+          ORGANIZATION_READ_PROTECTED.getSample().mapTo(Organization.class),
           ORGANIZATION_FULL_PROTECTED.getSample().mapTo(Organization.class)))
       .withTotalRecords(3));
   }
