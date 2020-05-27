@@ -8,15 +8,24 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.folio.config.Constants.OKAPI_URL;
 import static org.folio.rest.RestVerticle.OKAPI_HEADER_TENANT;
+import static org.folio.util.ResourcePathResolver.ACQUISITIONS_MEMBERSHIPS;
+import static org.folio.util.ResourcePathResolver.ACQUISITIONS_UNITS;
+import static org.folio.util.ResourcePathResolver.resourcesPath;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import one.util.streamex.StreamEx;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.exception.HttpException;
 import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
@@ -36,11 +45,22 @@ public abstract class BaseService {
   private static final String CALLING_ENDPOINT_MSG = "Sending {} {}";
   private static final String ERROR_MESSAGE = "errorMessage";
   private static final String ID = "id";
+  public static final String ACQUISITIONS_UNIT_ID = "acquisitionsUnitId";
+  public static final String IS_DELETED_PROP = "isDeleted";
+  public static final String ALL_UNITS_CQL = IS_DELETED_PROP + "=*";
+  public static final String ACTIVE_UNITS_CQL = IS_DELETED_PROP + "==false";
+  private static final Pattern CQL_SORT_BY_PATTERN = Pattern.compile("(.*)(\\ssortBy\\s.*)", Pattern.CASE_INSENSITIVE);
   public final Logger logger = LoggerFactory.getLogger(this.getClass());
+  public static final String ACQUISITIONS_UNIT_IDS = "acqUnitIds";
+  public static final String NO_ACQ_UNIT_ASSIGNED_CQL = "cql.allRecords=1 not " + ACQUISITIONS_UNIT_IDS + " <> []";
+  public static final String GET_UNITS_BY_QUERY = resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS;
+  public static final String GET_UNITS_MEMBERSHIPS_BY_QUERY = resourcesPath(ACQUISITIONS_MEMBERSHIPS) + SEARCH_PARAMS;
 
   public static String buildQuery(String query, Logger logger) {
     return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query, logger);
   }
+
+
 
   /**
    * @param query  string representing CQL query
@@ -224,5 +244,38 @@ public abstract class BaseService {
       id = location.substring(location.lastIndexOf('/') + 1);
     }
     return id;
+  }
+
+  public static String combineCqlExpressions(String operator, String... expressions) {
+    if (ArrayUtils.isEmpty(expressions)) {
+      return EMPTY;
+    }
+
+    String sorting = EMPTY;
+
+    // Check whether last expression contains sorting query. If it does, extract it to be added in the end of the resulting query
+    Matcher matcher = CQL_SORT_BY_PATTERN.matcher(expressions[expressions.length - 1]);
+    if (matcher.find()) {
+      expressions[expressions.length - 1] = matcher.group(1);
+      sorting = matcher.group(2);
+    }
+
+    return StreamEx.of(expressions)
+      .filter(StringUtils::isNotBlank)
+      .joining(") " + operator + " (", "(", ")") + sorting;
+  }
+
+  /**
+   * Transform list of id's to CQL query using 'or' operation
+   * @param ids list of id's
+   * @return String representing CQL query to get records by id's
+   */
+  public static String convertIdsToCqlQuery(Collection<String> ids) {
+    return convertIdsToCqlQuery(ids, ID, true);
+  }
+
+  public static String convertIdsToCqlQuery(Collection<String> values, String fieldName, boolean strictMatch) {
+    String prefix = fieldName + (strictMatch ? "==(" : "=(");
+    return StreamEx.of(values).joining(" or ", prefix, ")");
   }
 }

@@ -28,7 +28,7 @@ public interface OrganizationService {
    * @param headers OKAPI headers
    * @return {@link Organization}
    */
-  CompletableFuture<Organization> getOrganizationById(String id, Context context, Map<String, String> headers);
+  CompletableFuture<Organization> getOrganizationById(String id, String lang, Context context, Map<String, String> headers);
 
   /**
    * This method returns {@link OrganizationCollection} by query
