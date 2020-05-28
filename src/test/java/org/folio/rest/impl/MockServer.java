@@ -16,9 +16,11 @@ import static org.folio.rest.impl.ApiTestBase.PATH_SEPARATOR;
 import static org.folio.rest.impl.ApiTestBase.X_OKAPI_TENANT;
 import static org.folio.rest.impl.MockAcqUnits.FULL_PROTECTED;
 import static org.folio.rest.impl.MockAcqUnits.READ_ONLY;
+import static org.folio.rest.impl.MockAcqUnits.UPDATE_ONLY;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_NO_ACQ;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_READ_PROTECTED;
+import static org.folio.rest.impl.TestEntities.ORGANIZATION_UPDATE_PROTECTED;
 import static org.folio.service.BaseService.ACQUISITIONS_UNIT_ID;
 import static org.folio.service.BaseService.ACQUISITIONS_UNIT_IDS;
 import static org.folio.service.BaseService.ACTIVE_UNITS_CQL;
@@ -36,7 +38,6 @@ import static org.folio.util.ResourcePathResolver.resourceByIdPath;
 import static org.folio.util.ResourcePathResolver.resourcesPath;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -146,11 +147,11 @@ public class MockServer {
       .willReturn(aResponse().withStatus(500)));
 
     for (MockAcqUnits unit: MockAcqUnits.values()) {
-      wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnit(unit.acqUnitId, true)))
+      wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnit(true, unit.acqUnitId)))
         .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(unit.getAcqUnitsCollection())
           .withStatus(200)));
 
-      wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnit(unit.acqUnitId, false)))
+      wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnit(false, unit.acqUnitId)))
         .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(unit.getAcqUnitsCollection())
           .withStatus(200)));
 
@@ -166,6 +167,10 @@ public class MockServer {
         .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(MockAcqUnits.getEmptyAcqUnitMembershipCollection())
           .withStatus(200)));
     }
+
+    wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnit(false, ACQ_UNIT_READ_ONLY_ID, ACQ_UNIT_UPDATE_ONLY_ID)))
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(MockAcqUnits.createAcqUnitsCollection(READ_ONLY.getAcquisitionUnit(), UPDATE_ONLY.getAcquisitionUnit()).encode())
+        .withStatus(200)));
 
     wireMockServer.stubFor(get(urlEqualTo(urlForAcqUnitMembership(USER_NO_MEMBERSHIP_ID)))
       .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(MockAcqUnits.getEmptyAcqUnitMembershipCollection())
@@ -183,23 +188,39 @@ public class MockServer {
       .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(MockAcqUnits.getEmptyAcqUnitMembershipCollection())
         .withStatus(200)));
 
-    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_NO_ACQ_ID, READ_ONLY.acqUnitId))
-      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_NO_ACQ.getCollection().encode())
+    //  stubs for acq. units clauses
+
+    Arrays.asList(ORGANIZATION_NO_ACQ, ORGANIZATION_READ_PROTECTED)
+      .forEach(e -> {
+        wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(e.getId(), READ_ONLY.acqUnitId))
+          .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(e.getCollection().encode())
+            .withStatus(200)));
+
+        wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(e.getId(), UPDATE_ONLY.acqUnitId, READ_ONLY.acqUnitId))
+          .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(e.getCollection().encode())
+            .withStatus(200)));
+
+        wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(e.getId(), FULL_PROTECTED.acqUnitId, READ_ONLY.acqUnitId))
+          .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(e.getCollection().encode())
+            .withStatus(200)));
+      });
+
+    Arrays.asList(ORGANIZATION_UPDATE_PROTECTED, ORGANIZATION_FULL_PROTECTED)
+      .forEach(e -> {
+          wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(e.getId(), READ_ONLY.acqUnitId))
+            .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(TestEntities.getEmptyEntityCollection().encode())
+              .withStatus(200)));
+        });
+
+    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_UPDATE_ONLY_ID, UPDATE_ONLY.acqUnitId, READ_ONLY.acqUnitId))
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_UPDATE_PROTECTED.getCollection().encode())
         .withStatus(200)));
 
-    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_NO_ACQ_ID, FULL_PROTECTED.acqUnitId, READ_ONLY.acqUnitId))
-      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_NO_ACQ.getCollection().encode())
+    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_UPDATE_ONLY_ID, FULL_PROTECTED.acqUnitId, READ_ONLY.acqUnitId))
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(TestEntities.getEmptyEntityCollection().encode())
         .withStatus(200)));
 
-    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_READ_ONLY_ID, READ_ONLY.acqUnitId))
-      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_READ_PROTECTED.getCollection().encode())
-        .withStatus(200)));
-
-    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_READ_ONLY_ID, FULL_PROTECTED.acqUnitId, READ_ONLY.acqUnitId))
-      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_READ_PROTECTED.getCollection().encode())
-        .withStatus(200)));
-
-    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_FULL_PROTECTED_ID, READ_ONLY.acqUnitId))
+    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_FULL_PROTECTED_ID, UPDATE_ONLY.acqUnitId, READ_ONLY.acqUnitId))
       .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(TestEntities.getEmptyEntityCollection().encode())
         .withStatus(200)));
 
@@ -207,12 +228,21 @@ public class MockServer {
       .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_FULL_PROTECTED.getCollection().encode())
         .withStatus(200)));
 
+    // stubs for no id GET by query
+
     wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(EMPTY, READ_ONLY.acqUnitId))
-      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(TestEntities.getOpenForReadEntitiesCollection().encode())
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .withBody(TestEntities.createCollection(ORGANIZATION_NO_ACQ, ORGANIZATION_READ_PROTECTED).encode())
+        .withStatus(200)));
+
+    wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(EMPTY, UPDATE_ONLY.acqUnitId, READ_ONLY.acqUnitId))
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .withBody(TestEntities.createCollection(ORGANIZATION_NO_ACQ, ORGANIZATION_READ_PROTECTED, ORGANIZATION_UPDATE_PROTECTED).encode())
         .withStatus(200)));
 
     wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(EMPTY, FULL_PROTECTED.acqUnitId, READ_ONLY.acqUnitId))
-      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(TestEntities.getAllEntitiesCollection().encode())
+      .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .withBody(TestEntities.createCollection(ORGANIZATION_NO_ACQ, ORGANIZATION_READ_PROTECTED, ORGANIZATION_FULL_PROTECTED).encode())
         .withStatus(200)));
   }
 
@@ -234,10 +264,10 @@ public class MockServer {
     wireMockServer.resetRequests();
   }
 
-  private static String urlForAcqUnit(String id, boolean activeOnly) {
+  private static String urlForAcqUnit(boolean activeOnly, String... ids) {
     return String.format(resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS, Integer.MAX_VALUE, 0,
       buildQuery(combineCqlExpressions("and", activeOnly ? ACTIVE_UNITS_CQL : ALL_UNITS_CQL,
-        convertIdsToCqlQuery(Collections.singletonList(id))), logger), "en");
+        convertIdsToCqlQuery(Arrays.asList(ids))), logger), "en");
   }
 
   private static String urlOpenForReadAcqUnit() {

@@ -13,8 +13,10 @@ import org.folio.rest.acq.model.AcquisitionsUnitCollection;
 import org.folio.rest.acq.model.AcquisitionsUnitMembership;
 import org.folio.rest.acq.model.AcquisitionsUnitMembershipCollection;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public enum MockAcqUnits {
   READ_ONLY(ACQ_UNIT_READ_ONLY_ID, USER_READ_ONLY_MEMBERSHIP_ID, false, true, false, true, true),
@@ -42,20 +44,19 @@ public enum MockAcqUnits {
   public String getAcqUnitsCollection() {
     return JsonObject.mapFrom(
       new AcquisitionsUnitCollection()
-        .withAcquisitionsUnits(Collections.singletonList(
-          new AcquisitionsUnit()
-            .withId(acqUnitId)
-            .withIsDeleted(deleted)
-            .withProtectCreate(protectCreate)
-            .withProtectRead(protectRead)
-            .withProtectUpdate(protectUpdate)
-            .withProtectDelete(protectDelete)))
+        .withAcquisitionsUnits(Collections.singletonList(getAcquisitionUnit()))
         .withTotalRecords(1))
       .encode();
   }
 
-  public static String getEmptyAcqUnitMembershipCollection() {
-    return JsonObject.mapFrom(new AcquisitionsUnitMembershipCollection().withTotalRecords(0)).encode();
+  public AcquisitionsUnit getAcquisitionUnit() {
+    return new AcquisitionsUnit()
+      .withId(acqUnitId)
+      .withIsDeleted(deleted)
+      .withProtectCreate(protectCreate)
+      .withProtectRead(protectRead)
+      .withProtectUpdate(protectUpdate)
+      .withProtectDelete(protectDelete);
   }
 
   public String getAcqUnitMembershipCollection() {
@@ -68,5 +69,16 @@ public enum MockAcqUnits {
             .withUserId(userId)))
         .withTotalRecords(1))
       .encode();
+  }
+
+  public static String getEmptyAcqUnitMembershipCollection() {
+    return JsonObject.mapFrom(new AcquisitionsUnitMembershipCollection().withTotalRecords(0)).encode();
+  }
+
+  public static JsonObject createAcqUnitsCollection(AcquisitionsUnit... acquisitionsUnits) {
+    return JsonObject.mapFrom(new AcquisitionsUnitCollection()
+      .withAcquisitionsUnits(Arrays.stream(acquisitionsUnits)
+        .collect(Collectors.toList()))
+      .withTotalRecords(acquisitionsUnits.length));
   }
 }

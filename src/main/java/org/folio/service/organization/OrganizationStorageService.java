@@ -110,6 +110,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
       updatedOrganization.setId(id);
     } else if (!id.equals(updatedOrganization.getId())) {
       future.completeExceptionally(new HttpException(422, MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
+      return future;
     }
     HttpClientInterface client = getHttpClient(headers);
     handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), client, context, headers, logger)

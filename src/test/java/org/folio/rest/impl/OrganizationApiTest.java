@@ -1,9 +1,12 @@
 package org.folio.rest.impl;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.folio.config.Constants.ID;
 import static org.folio.rest.RestVerticle.OKAPI_HEADER_PERMISSIONS;
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
+import static org.folio.rest.impl.MockServer.ACQ_UNIT_READ_ONLY_ID;
+import static org.folio.rest.impl.MockServer.ACQ_UNIT_UPDATE_ONLY_ID;
 import static org.folio.rest.impl.MockServer.USER_FULL_PROTECTED_MEMBERSHIP_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
 import static org.folio.rest.impl.MockServer.ID_INTERNAL_SERVER_ERROR;
@@ -50,6 +53,7 @@ class OrganizationApiTest extends ApiTestBase {
   private static final List<TestEntities> openForReadEntities = Arrays.asList(ORGANIZATION_NO_ACQ, ORGANIZATION_READ_PROTECTED);
   private static final List<TestEntities> openForUpdateEntities = Arrays.asList(ORGANIZATION_NO_ACQ, ORGANIZATION_UPDATE_PROTECTED);
   private static final List<TestEntities> fullProtectedEntities = Arrays.asList(ORGANIZATION_FULL_PROTECTED);
+  private static final String MANAGE_PERMISSIONS = "orders.acquisitions-units-assignments.manage";
 
   @Test
   void testPost() {
@@ -183,14 +187,14 @@ class OrganizationApiTest extends ApiTestBase {
 
   @ParameterizedTest
   @EnumSource(TestEntities.class)
-  void testGetByQueryWithProtectedMembership(TestEntities e) {
+  void testGetByQueryWithAppropriateMembership(TestEntities e) {
     logger.info("===== Verify GET by ID " + e.name() + ": Successful =====");
 
     JsonObject expected = e.getCollection();
 
     String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
     JsonObject actual = new JsonObject(
-      verifyGetRequest(endpoint, headersForUserAndPermissions(USER_FULL_PROTECTED_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+      verifyGetRequest(endpoint, headersForUserAndPermissions(e.getUserId()), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
 
     assertThat(Objects.equals(actual, expected), is(true));
@@ -268,6 +272,72 @@ class OrganizationApiTest extends ApiTestBase {
 
   @ParameterizedTest
   @EnumSource(TestEntities.class)
+  void testPutByIdNoAcqChangesMatchingMembership(TestEntities e) {
+    logger.info("===== Verify PUT by ID " + e.name() + " without acq. units change: Successful =====");
+
+    JsonObject expected = e.getSample();
+    expected.put(e.getUpdatedFieldName(), e.getUpdatedFieldValue());
+
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), JsonObject.mapFrom(expected).encode(),
+      headersForUserAndPermissions(e.getUserId()), EMPTY, 204);
+
+    assertThat(MockServer.getInstance().getAllServeEvents().stream()
+      .filter(event -> event.getRequest().getMethod().equals(RequestMethod.PUT))
+      .collect(Collectors.toList()), hasSize(1));
+  }
+
+  @ParameterizedTest
+  @EnumSource(TestEntities.class)
+  void testPutByIdAcqChangesMatchingMembershipAndManagePermissions(TestEntities e) {
+    logger.info("===== Verify PUT by ID " + e.name() + " with acq. units change and manage permissions: Successful =====");
+
+    JsonObject expected = e.getSample();
+    expected.put(e.getUpdatedFieldName(), e.getUpdatedFieldValue());
+    expected.put("acqUnitIds", new JsonArray(Arrays.asList(ACQ_UNIT_READ_ONLY_ID, ACQ_UNIT_UPDATE_ONLY_ID)));
+
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), JsonObject.mapFrom(expected).encode(),
+      headersForUserAndPermissions(e.getUserId(), MANAGE_PERMISSIONS), EMPTY, 204);
+
+    assertThat(MockServer.getInstance().getAllServeEvents().stream()
+      .filter(event -> event.getRequest().getMethod().equals(RequestMethod.PUT))
+      .collect(Collectors.toList()), hasSize(1));
+  }
+
+  @ParameterizedTest
+  @EnumSource(TestEntities.class)
+  void testPutByIdAcqChangesMatchingMembershipNoManagePermissions(TestEntities e) {
+    logger.info("===== Verify PUT by ID " + e.name() + " with acq. units change and no manage permissions: Forbidden =====");
+
+    JsonObject expected = e.getSample();
+    expected.put(e.getUpdatedFieldName(), e.getUpdatedFieldValue());
+    expected.put("acqUnitIds", new JsonArray(Arrays.asList(ACQ_UNIT_READ_ONLY_ID, ACQ_UNIT_UPDATE_ONLY_ID)));
+
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), JsonObject.mapFrom(expected).encode(),
+      headersForUserAndPermissions(e.getUserId()), APPLICATION_JSON, 403);
+
+    assertThat(MockServer.getInstance().getAllServeEvents().stream()
+      .filter(event -> event.getRequest().getMethod().equals(RequestMethod.PUT))
+      .collect(Collectors.toList()), hasSize(0));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getClosedForUpdateEntities")
+  void testPutByIdClosedForUpdateEntitiesWithNoMembership(TestEntities e) {
+    logger.info("===== Verify PUT by ID open for update " + e.name() + ": Forbidden =====");
+
+    JsonObject expected = e.getSample();
+    expected.put(e.getUpdatedFieldName(), e.getUpdatedFieldValue());
+
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), JsonObject.mapFrom(expected).encode(),
+      headersForUserAndPermissions(USER_NO_MEMBERSHIP_ID), APPLICATION_JSON, 403);
+
+    assertThat(MockServer.getInstance().getAllServeEvents().stream()
+      .filter(event -> event.getRequest().getMethod().equals(RequestMethod.PUT))
+      .collect(Collectors.toList()), hasSize(0));
+  }
+
+  @ParameterizedTest
+  @EnumSource(TestEntities.class)
   void testPutIdMismatchTest(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + ": ID Mismatch =====");
 
@@ -289,19 +359,20 @@ class OrganizationApiTest extends ApiTestBase {
 
     JsonObject entity = e.getSample();
     JsonObject expected = entity.copy();
-    expected.put(ID, ORGANIZATION_NO_ACQ_ID);
+    expected.put(ID, e.getId());
     assertThat(entity.getString(ID), nullValue());
 
-    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + ORGANIZATION_NO_ACQ_ID, JsonObject.mapFrom(entity)
-      .encode());
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), JsonObject.mapFrom(entity).encode(),
+      headersForUserAndPermissions(e.getUserId()), EMPTY, 204);
 
-    assertThat(MockServer.getInstance()
-      .getAllServeEvents(), hasSize(1));
+    assertThat(MockServer.getInstance().getAllServeEvents().stream()
+      .filter(event -> event.getRequest().getMethod().equals(RequestMethod.PUT))
+      .collect(Collectors.toList()), hasSize(1));
     assertThat(new JsonObject(MockServer.getInstance()
       .getAllServeEvents()
       .get(0)
       .getRequest()
-      .getBodyAsString()).getString(ID), is(ORGANIZATION_NO_ACQ_ID));
+      .getBodyAsString()).getString(ID), is(e.getId()));
   }
 
   @ParameterizedTest
@@ -378,6 +449,10 @@ class OrganizationApiTest extends ApiTestBase {
 
   private static Stream<TestEntities> getOpenForUpdateEntities() {
     return openForUpdateEntities.stream();
+  }
+
+  private static Stream<TestEntities> getClosedForUpdateEntities() {
+    return Stream.of(ORGANIZATION_READ_PROTECTED, ORGANIZATION_FULL_PROTECTED);
   }
 
   private static Stream<TestEntities> getFullProtectedEntities() {
