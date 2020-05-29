@@ -16,8 +16,8 @@ public class ResourcePathResolver {
   static {
     Map<String, String> apis = new HashMap<>();
     apis.put(ORGANIZATIONS, "/organizations-storage/organizations");
-    apis.put(ACQUISITIONS_UNITS, "/acquisitions-units/units");
-    apis.put(ACQUISITIONS_MEMBERSHIPS, "/acquisitions-units/memberships");
+    apis.put(ACQUISITIONS_UNITS, "/acquisitions-units-storage/units");
+    apis.put(ACQUISITIONS_MEMBERSHIPS, "/acquisitions-units-storage/memberships");
 
     SUB_OBJECT_COLLECTION_APIS = Collections.unmodifiableMap(apis);
     SUB_OBJECT_ITEM_APIS = Collections.unmodifiableMap(apis.entrySet()
