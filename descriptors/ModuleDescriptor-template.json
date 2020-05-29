@@ -39,7 +39,9 @@
           "pathPattern": "/organizations/organizations/{id}",
           "permissionsRequired": ["organizations.organizations.item.put"],
           "modulePermissions": [
-            "organizations-storage.organizations.item.put"
+            "organizations-storage.organizations.item.put",
+            "acquisitions-units-storage.units.collection.get",
+            "acquisitions-units-storage.memberships.collection.get"
           ]
         },
         {
