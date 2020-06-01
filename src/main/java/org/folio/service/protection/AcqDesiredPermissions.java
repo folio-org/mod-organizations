@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum AcqDesiredPermissions {
-  MANAGE("orders.acquisitions-units-assignments.manage");
+  MANAGE("organizations.acquisitions-units-assignments.manage");
 
   private String permission;
   private static final List<String> values;
