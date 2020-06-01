@@ -38,7 +38,7 @@
           "methods": ["PUT"],
           "pathPattern": "/organizations/organizations/{id}",
           "permissionsRequired": ["organizations.organizations.item.put"],
-          "permissionsDesired": ["orders.acquisitions-units-assignments.manage"],
+          "permissionsDesired": ["organizations.acquisitions-units-assignments.manage"],
           "modulePermissions": [
             "organizations-storage.organizations.item.put",
             "acquisitions-units-storage.units.collection.get",
