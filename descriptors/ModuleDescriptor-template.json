@@ -40,6 +40,7 @@
           "permissionsRequired": ["organizations.organizations.item.put"],
           "permissionsDesired": ["organizations.acquisitions-units-assignments.manage"],
           "modulePermissions": [
+            "organizations-storage.organizations.item.get",
             "organizations-storage.organizations.item.put",
             "acquisitions-units-storage.units.collection.get",
             "acquisitions-units-storage.memberships.collection.get"
@@ -70,7 +71,7 @@
   "requires": [
     {
       "id": "organizations-storage.organizations",
-      "version": "3.0"
+      "version": "3.1"
     }
   ],
   "permissionSets": [
