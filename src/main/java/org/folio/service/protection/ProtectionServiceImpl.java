@@ -17,13 +17,13 @@ import org.apache.commons.collections4.ListUtils;
 import org.folio.HttpStatus;
 import org.folio.exception.HttpException;
 import org.folio.rest.acq.model.AcquisitionsUnit;
+import org.folio.rest.acq.model.AcquisitionsUnitCollection;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.service.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 @Service
 public class ProtectionServiceImpl extends BaseService implements ProtectionService {
   private AcquisitionsUnitsService acquisitionsUnitsService;
-  private final List<AcquisitionsUnit> fetchedUnits = new ArrayList<>();
 
   @Autowired
   public void setAcquisitionsUnitsService(AcquisitionsUnitsService acquisitionsUnitsService) {
@@ -76,23 +75,9 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   }
 
   private CompletableFuture<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, String lang, Context context, Map<String, String> headers) {
-    // Check if all required units are already available
-    List<AcquisitionsUnit> units = fetchedUnits.stream()
-      .filter(unit -> unitIds.contains(unit.getId()))
-      .distinct()
-      .collect(Collectors.toList());
-
-    if (units.size() == unitIds.size()) {
-      return CompletableFuture.completedFuture(units);
-    }
-
     String query = combineCqlExpressions("and", ALL_UNITS_CQL, convertIdsToCqlQuery(unitIds));
     return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
-      .thenApply(acquisitionsUnitCollection -> {
-        List<AcquisitionsUnit> acquisitionsUnits = acquisitionsUnitCollection.getAcquisitionsUnits();
-        fetchedUnits.addAll(acquisitionsUnits);
-        return acquisitionsUnits;
-      });
+      .thenApply(AcquisitionsUnitCollection::getAcquisitionsUnits);
   }
 
   private boolean applyMergingStrategy(List<AcquisitionsUnit> units, Set<ProtectedOperationType> operations) {
