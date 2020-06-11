@@ -9,3 +9,6 @@ The primary focus of this release was to add initial acquisition units support f
 * [MODORG-4](https://issues.folio.org/browse/MODORG-4) Restrict updates of Organization records based upon acquisitions unit
 * [MODORG-3](https://issues.folio.org/browse/MODORG-3) Restrict search/view of Organization records based upon acquisitions unit
 * [MODORG-1](https://issues.folio.org/browse/MODORG-1) Project setup: mod-organizations
+
+### Bug Fixes
+* [MODORG-11](https://issues.folio.org/browse/MODORG-11) Check restrictions for non-acq-unit members
