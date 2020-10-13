@@ -1,4 +1,10 @@
-## 1.1.0 - Unreleased
+## 1.2.0 - Unreleased
+## 1.1.0 - Released
+The primary focus of this release was to Upgrade RMB and JDK 11 versions
+
+### Stories
+* [MODORG-15](https://issues.folio.org/browse/MODORG-15) mod-organizations: Update RMB
+* [MODORG-12](https://issues.folio.org/browse/MODORG-12) Migrate mod-organizations to JDK 11
  
 ## 1.0.0 - Released
 The primary focus of this release was to add initial acquisition units support for organizations API
