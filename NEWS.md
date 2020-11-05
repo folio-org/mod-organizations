@@ -1,4 +1,14 @@
 ## 1.2.0 - Unreleased
+
+## 1.1.1 - Released
+The focus of this release was to fix logging issues
+
+[Full Changelog](https://github.com/folio-org/mod-orders-storage/compare/v11.0.2...v11.0.3)
+
+### Bug Fixes
+* [MODORG-17](https://issues.folio.org/browse/MODORG-17) No logging in honeysuckle version
+
+
 ## 1.1.0 - Released
 The primary focus of this release was to Upgrade RMB and JDK 11 versions
 
