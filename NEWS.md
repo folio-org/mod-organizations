@@ -3,7 +3,7 @@
 ## 1.1.1 - Released
 The focus of this release was to fix logging issues
 
-[Full Changelog](https://github.com/folio-org/mod-orders-storage/compare/v11.0.2...v11.0.3)
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.1.0...v1.1.1)
 
 ### Bug Fixes
 * [MODORG-17](https://issues.folio.org/browse/MODORG-17) No logging in honeysuckle version
