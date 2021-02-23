@@ -41,12 +41,13 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 public class MockServer {
 
@@ -64,7 +65,7 @@ public class MockServer {
   public static final String USER_UPDATE_ONLY_MEMBERSHIP_ID = "6bf43c5a-6513-4ce0-a3bd-ac447b222094";
   public static final String USER_FULL_PROTECTED_MEMBERSHIP_ID = "480dba68-ee84-4b9c-a374-7e824fc49227";
   public static final String ISE_X_OKAPI_TENANT = "ISE";
-  private static final Logger logger = LoggerFactory.getLogger(MockServer.class);
+  private static final Logger logger = LogManager.getLogger(MockServer.class);
   public static WireMockServer wireMockServer;
 
   public static void init(int mockPort) {
@@ -206,11 +207,9 @@ public class MockServer {
       });
 
     Arrays.asList(ORGANIZATION_UPDATE_PROTECTED, ORGANIZATION_FULL_PROTECTED)
-      .forEach(e -> {
-          wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(e.getId(), READ_ONLY.acqUnitId))
-            .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(TestEntities.getEmptyEntityCollection().encode())
-              .withStatus(200)));
-        });
+      .forEach(e -> wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(e.getId(), READ_ONLY.acqUnitId))
+        .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(TestEntities.getEmptyEntityCollection().encode())
+          .withStatus(200))));
 
     wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(ORGANIZATION_UPDATE_ONLY_ID, UPDATE_ONLY.acqUnitId, READ_ONLY.acqUnitId))
       .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON).withBody(ORGANIZATION_UPDATE_PROTECTED.getCollection().encode())

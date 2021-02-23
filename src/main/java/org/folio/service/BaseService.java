@@ -23,9 +23,10 @@ import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import one.util.streamex.StreamEx;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.exception.HttpException;
 import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
@@ -34,14 +35,12 @@ import org.folio.rest.tools.utils.TenantTool;
 import io.vertx.core.Context;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
+import one.util.streamex.StreamEx;
 
 public abstract class BaseService {
 
   public static final String SEARCH_PARAMS = "?limit=%s&offset=%s%s&lang=%s";
-  private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling {} {}";
+  private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling %s %s";
   private static final String CALLING_ENDPOINT_MSG = "Sending {} {}";
   private static final String ERROR_MESSAGE = "errorMessage";
   private static final String ID = "id";
@@ -50,7 +49,7 @@ public abstract class BaseService {
   public static final String ALL_UNITS_CQL = IS_DELETED_PROP + "=*";
   public static final String ACTIVE_UNITS_CQL = IS_DELETED_PROP + "==false";
   private static final Pattern CQL_SORT_BY_PATTERN = Pattern.compile("(.*)(\\ssortBy\\s.*)", Pattern.CASE_INSENSITIVE);
-  public final Logger logger = LoggerFactory.getLogger(this.getClass());
+  protected final Logger logger = LogManager.getLogger(this.getClass());
   public static final String ACQUISITIONS_UNIT_IDS = "acqUnitIds";
   public static final String NO_ACQ_UNIT_ASSIGNED_CQL = "cql.allRecords=1 not " + ACQUISITIONS_UNIT_IDS + " <> []";
   public static final String GET_UNITS_BY_QUERY = resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS;
@@ -71,7 +70,7 @@ public abstract class BaseService {
     try {
       return URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
     } catch (UnsupportedEncodingException e) {
-      logger.error("Error happened while attempting to encode '{}'", e, query);
+      logger.error(String.format("Error happened while attempting to encode '%s'", query), e);
       throw new CompletionException(e);
     }
   }
@@ -112,7 +111,7 @@ public abstract class BaseService {
    */
   public CompletableFuture<String> handlePostRequest(JsonObject recordData, String endpoint, HttpClientInterface httpClient,
       Context ctx, Map<String, String> okapiHeaders, Logger logger) {
-    CompletableFuture<String> future = new VertxCompletableFuture<>(ctx);
+    CompletableFuture<String> future = new CompletableFuture<>();
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Sending 'POST {}' with body: {}", endpoint, recordData.encodePrettily());
@@ -125,7 +124,7 @@ public abstract class BaseService {
         })
         .exceptionally(throwable -> {
           future.completeExceptionally(throwable);
-          logger.error("'POST {}' request failed. Request body: {}", throwable, endpoint, recordData.encodePrettily());
+          logger.error(String.format("'POST %s' request failed. Request body: %s", endpoint, recordData.encodePrettily()), throwable);
           return null;
         });
     } catch (Exception e) {
@@ -134,10 +133,10 @@ public abstract class BaseService {
     return future;
   }
 
-  public CompletableFuture<JsonObject> handleGetRequest(String endpoint, HttpClientInterface httpClient, Context ctx,
+  public CompletableFuture<JsonObject> handleGetRequest(String endpoint, HttpClientInterface httpClient,
       Map<String, String> okapiHeaders, Logger logger) {
 
-    CompletableFuture<JsonObject> future = new VertxCompletableFuture<>(ctx);
+    CompletableFuture<JsonObject> future = new CompletableFuture<>();
     try {
       logger.info("Calling GET {}", endpoint);
       httpClient.request(HttpMethod.GET, endpoint, okapiHeaders)
@@ -152,12 +151,12 @@ public abstract class BaseService {
           future.complete(body);
         })
         .exceptionally(t -> {
-          logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, t, HttpMethod.GET, endpoint);
+          logger.error(String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.GET, endpoint), t);
           future.completeExceptionally(t);
           return null;
         });
     } catch (Exception e) {
-      logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, e, HttpMethod.GET, endpoint);
+      logger.error(String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.GET, endpoint), e);
       future.completeExceptionally(e);
     }
     return future;
@@ -170,8 +169,8 @@ public abstract class BaseService {
    * @param endpoint   endpoint
    */
   public CompletableFuture<Void> handlePutRequest(String endpoint, JsonObject recordData, HttpClientInterface httpClient,
-      Context ctx, Map<String, String> okapiHeaders, Logger logger) {
-    CompletableFuture<Void> future = new VertxCompletableFuture<>(ctx);
+       Map<String, String> okapiHeaders, Logger logger) {
+    CompletableFuture<Void> future = new CompletableFuture<>();
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Sending 'PUT {}' with body: {}", endpoint, recordData.encodePrettily());
@@ -184,7 +183,7 @@ public abstract class BaseService {
         })
         .exceptionally(e -> {
           future.completeExceptionally(e);
-          logger.error("'PUT {}' request failed. Request body: {}", e, endpoint, recordData.encodePrettily());
+          logger.error(String.format("'PUT %s' request failed. Request body: %s", endpoint, recordData.encodePrettily()), e);
           return null;
         });
     } catch (Exception e) {
@@ -198,21 +197,22 @@ public abstract class BaseService {
    *
    * @param endpoint endpoint
    */
-  public CompletableFuture<Void> handleDeleteRequest(String endpoint, HttpClientInterface httpClient, Context ctx,
+  public CompletableFuture<Void> handleDeleteRequest(String endpoint, HttpClientInterface httpClient,
       Map<String, String> okapiHeaders, Logger logger) {
-    CompletableFuture<Void> future = new VertxCompletableFuture<>(ctx);
+    CompletableFuture<Void> future = new CompletableFuture<>();
     logger.debug(CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpoint);
     try {
       httpClient.request(HttpMethod.DELETE, endpoint, okapiHeaders)
         .thenAccept(this::verifyResponse)
         .thenApply(future::complete)
         .exceptionally(t -> {
-          logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, t, HttpMethod.DELETE, endpoint);
+          String errorMessage = String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpoint);
+          logger.error(errorMessage, t);
           future.completeExceptionally(t);
           return null;
         });
     } catch (Exception e) {
-      logger.error(EXCEPTION_CALLING_ENDPOINT_MSG, e, HttpMethod.DELETE, endpoint);
+      logger.error(String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpoint), e);
       future.completeExceptionally(e);
     }
     return future;

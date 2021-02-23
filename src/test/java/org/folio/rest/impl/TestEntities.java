@@ -3,8 +3,8 @@ package org.folio.rest.impl;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_FULL_PROTECTED_ID;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_READ_ONLY_ID;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_UPDATE_ONLY_ID;
-import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_FULL_PROTECTED_ID;
+import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_READ_ONLY_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_UPDATE_ONLY_ID;
 import static org.folio.rest.impl.MockServer.USER_FULL_PROTECTED_MEMBERSHIP_ID;
@@ -32,15 +32,15 @@ public enum TestEntities {
   ORGANIZATION_FULL_PROTECTED(ORGANIZATION_FULL_PROTECTED_ID, "organizations/organizations", ORGANIZATIONS, getEntity(ACQ_UNIT_FULL_PROTECTED_ID), getEntityCollection(ACQ_UNIT_FULL_PROTECTED_ID), Organization.class, "code",
     "TST-ORG-FULL-PROTECT", USER_FULL_PROTECTED_MEMBERSHIP_ID);
 
-  String id;
-  String resource;
-  String url;
-  JsonObject sample;
-  JsonObject collection;
-  String updatedFieldName;
-  Object updatedFieldValue;
-  Class clazz;
-  String userId;
+  final String id;
+  final String resource;
+  final String url;
+  final JsonObject sample;
+  final JsonObject collection;
+  final String updatedFieldName;
+  final Object updatedFieldValue;
+  final Class clazz;
+  final String userId;
 
   TestEntities(String id, String url, String resource, JsonObject sample, JsonObject collection, Class clazz, String updatedFieldName,
       Object updatedFieldValue, String userId) {

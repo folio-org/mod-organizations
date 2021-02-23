@@ -7,29 +7,30 @@ import static org.folio.rest.impl.MockServer.USER_FULL_PROTECTED_MEMBERSHIP_ID;
 import static org.folio.rest.impl.MockServer.USER_READ_ONLY_MEMBERSHIP_ID;
 import static org.folio.rest.impl.MockServer.USER_UPDATE_ONLY_MEMBERSHIP_ID;
 
-import io.vertx.core.json.JsonObject;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.AcquisitionsUnitCollection;
 import org.folio.rest.acq.model.AcquisitionsUnitMembership;
 import org.folio.rest.acq.model.AcquisitionsUnitMembershipCollection;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import io.vertx.core.json.JsonObject;
 
 public enum MockAcqUnits {
   READ_ONLY(ACQ_UNIT_READ_ONLY_ID, USER_READ_ONLY_MEMBERSHIP_ID, false, true, false, true, true),
   UPDATE_ONLY(ACQ_UNIT_UPDATE_ONLY_ID, USER_UPDATE_ONLY_MEMBERSHIP_ID, false, true, true, false, true),
   FULL_PROTECTED(ACQ_UNIT_FULL_PROTECTED_ID, USER_FULL_PROTECTED_MEMBERSHIP_ID, false, true, true, true, true);
 
-  String acqUnitId;
-  String userId;
-  boolean deleted;
-  boolean protectCreate;
-  boolean protectRead;
-  boolean protectUpdate;
-  boolean protectDelete;
+  final String acqUnitId;
+  final String userId;
+  final boolean deleted;
+  final boolean protectCreate;
+  final boolean protectRead;
+  final boolean protectUpdate;
+  final boolean protectDelete;
 
   MockAcqUnits(String acqUnitId, String userId, boolean deleted, boolean protectCreate, boolean protectRead, boolean protectUpdate, boolean protectDelete) {
     this.acqUnitId = acqUnitId;

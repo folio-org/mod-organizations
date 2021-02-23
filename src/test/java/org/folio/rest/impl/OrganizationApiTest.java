@@ -7,11 +7,11 @@ import static org.folio.rest.RestVerticle.OKAPI_HEADER_PERMISSIONS;
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_READ_ONLY_ID;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_UPDATE_ONLY_ID;
-import static org.folio.rest.impl.MockServer.USER_FULL_PROTECTED_MEMBERSHIP_ID;
-import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
 import static org.folio.rest.impl.MockServer.ID_INTERNAL_SERVER_ERROR;
 import static org.folio.rest.impl.MockServer.ID_NOT_FOUND;
 import static org.folio.rest.impl.MockServer.ISE_X_OKAPI_TENANT;
+import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
+import static org.folio.rest.impl.MockServer.USER_FULL_PROTECTED_MEMBERSHIP_ID;
 import static org.folio.rest.impl.MockServer.USER_NO_MEMBERSHIP_ID;
 import static org.folio.rest.impl.MockServer.USER_READ_ONLY_MEMBERSHIP_ID;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
@@ -26,33 +26,35 @@ import static wiremock.org.hamcrest.Matchers.is;
 import static wiremock.org.hamcrest.Matchers.nullValue;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.github.tomakehurst.wiremock.http.RequestMethod;
-import io.vertx.core.json.JsonArray;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.HttpStatus;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.github.tomakehurst.wiremock.http.RequestMethod;
 
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.junit.jupiter.params.provider.MethodSource;
 
 class OrganizationApiTest extends ApiTestBase {
 
-  private static final Logger logger = LoggerFactory.getLogger(OrganizationApiTest.class);
+  private static final Logger logger = LogManager.getLogger(OrganizationApiTest.class);
   private static final List<TestEntities> openForReadEntities = Arrays.asList(ORGANIZATION_NO_ACQ, ORGANIZATION_READ_PROTECTED);
   private static final List<TestEntities> openForUpdateEntities = Arrays.asList(ORGANIZATION_NO_ACQ, ORGANIZATION_UPDATE_PROTECTED);
-  private static final List<TestEntities> fullProtectedEntities = Arrays.asList(ORGANIZATION_FULL_PROTECTED);
+  private static final List<TestEntities> fullProtectedEntities = Collections.singletonList(ORGANIZATION_FULL_PROTECTED);
   private static final String MANAGE_PERMISSIONS = "organizations.acquisitions-units-assignments.manage";
 
   @Test

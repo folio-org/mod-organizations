@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
-import io.vertx.core.Vertx;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.resource.Organizations;
 import org.folio.service.organization.OrganizationService;
@@ -17,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 public class OrganizationApi extends BaseApi implements Organizations {
 
