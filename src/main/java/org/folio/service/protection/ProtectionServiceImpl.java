@@ -69,8 +69,9 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
     List<String> updatedAcqUnitIds = updatedOrg.getAcqUnitIds();
     List<String> currentAcqUnitIds = currentOrg.getAcqUnitIds();
 
-    return CompletableFuture.runAsync(() -> verifyUserHasManagePermission(updatedAcqUnitIds, currentAcqUnitIds, getProvidedPermissions(headers)))
-    .thenCompose(ok -> verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), lang, context, headers))
+    verifyUserHasManagePermission(updatedAcqUnitIds, currentAcqUnitIds, getProvidedPermissions(headers));
+
+    return verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), lang, context, headers)
     .thenCompose(ok -> checkOperationsRestrictions(currentAcqUnitIds, Collections.singleton(UPDATE), lang, context, headers));
   }
 
