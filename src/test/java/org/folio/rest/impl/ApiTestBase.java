@@ -92,9 +92,6 @@ public class ApiTestBase {
     return verifyGetRequest(url, Headers.headers(X_OKAPI_URL, X_OKAPI_TENANT), expectedContentType, expectedHttpCode);
   }
 
-  public Response verifyGetRequest(String url) {
-    return verifyGetRequest(url, Headers.headers(X_OKAPI_URL, X_OKAPI_TENANT), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt());
-  }
 
   public Response verifyPutRequest(String url, Object body, Headers headers, String expectedContentType, int expectedHttpCode) {
     return RestAssured.with()

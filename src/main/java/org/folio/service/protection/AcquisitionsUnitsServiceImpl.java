@@ -2,8 +2,13 @@ package org.folio.service.protection;
 
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
 
-import io.vertx.core.Context;
-import one.util.streamex.StreamEx;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.acq.model.AcquisitionsUnitCollection;
@@ -13,12 +18,8 @@ import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.service.BaseService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
+import io.vertx.core.Context;
+import one.util.streamex.StreamEx;
 
 @Service
 public class AcquisitionsUnitsServiceImpl extends BaseService implements AcquisitionsUnitsService {
@@ -32,7 +33,7 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
       query = combineCqlExpressions("and", ACTIVE_UNITS_CQL, query);
     }
     String endpoint = String.format(GET_UNITS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
-    return handleGetRequest(endpoint, client, context, headers, logger)
+    return handleGetRequest(endpoint, client, headers, logger)
       .thenApply(jsonUnits -> jsonUnits.mapTo(AcquisitionsUnitCollection.class))
       .handle((acqUnitsColl, t) -> {
         client.closeClient();
@@ -47,7 +48,7 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
   public CompletableFuture<AcquisitionsUnitMembershipCollection> getAcquisitionsUnitsMemberships(String query, int offset, int limit, String lang, Context context, Map<String, String> headers) {
     HttpClientInterface client = getHttpClient(headers);
     String endpoint = String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
-    return handleGetRequest(endpoint, client, context, headers, logger)
+    return handleGetRequest(endpoint, client, headers, logger)
       .thenApply(jsonUnitsMembership -> jsonUnitsMembership.mapTo(AcquisitionsUnitMembershipCollection.class))
       .handle((acqUnitsMembershipColl, t) -> {
         client.closeClient();

@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;
 import io.vertx.core.json.JsonObject;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
 
 @Service
 public class OrganizationStorageService extends BaseService implements OrganizationService {
@@ -56,9 +55,9 @@ public class OrganizationStorageService extends BaseService implements Organizat
   @Override
   public CompletableFuture<Organization> getOrganizationById(String id, String lang, Context context, Map<String, String> headers) {
     HttpClientInterface client = getHttpClient(headers);
-    CompletableFuture<Organization> future = new VertxCompletableFuture<>(context);
+    CompletableFuture<Organization> future = new CompletableFuture<>();
 
-    handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), client, context, headers, logger)
+    handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), client, headers, logger)
       .thenApply(json -> json.mapTo(Organization.class))
       .thenApply(organization -> protectionService.checkOperationsRestrictions(organization.getAcqUnitIds(), Collections.singleton(READ), lang, context, headers)
         .handle((res, t) -> {
@@ -80,16 +79,16 @@ public class OrganizationStorageService extends BaseService implements Organizat
   @Override
   public CompletableFuture<OrganizationCollection> getOrganizationCollection(int offset, int limit, String query, String lang,
       Context context, Map<String, String> headers) {
-    CompletableFuture<OrganizationCollection> future = new VertxCompletableFuture<>(context);
+    CompletableFuture<OrganizationCollection> future = new CompletableFuture<>();
     HttpClientInterface client = getHttpClient(headers);
     acquisitionsUnitsService.buildAcqUnitsCqlClause(query, offset, limit, lang, context, headers)
       .thenCompose(clause -> {
         String endpoint = StringUtils.isEmpty(query) ?
           String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(clause, logger), lang) :
           String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(combineCqlExpressions("and", clause, query), logger), lang);
-        return handleGetRequest(endpoint, client, context, headers, logger);
+        return handleGetRequest(endpoint, client, headers, logger);
       })
-      .thenCompose(json -> VertxCompletableFuture.supplyBlockingAsync(context, () -> json.mapTo(OrganizationCollection.class)))
+      .thenApply(json -> json.mapTo(OrganizationCollection.class))
       .handle((collection, t) -> {
         client.closeClient();
         if (Objects.nonNull(t)) {
@@ -105,7 +104,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
   @Override
   public CompletableFuture<Void> updateOrganizationById(String id, Organization updatedOrganization, String lang, Context context,
       Map<String, String> headers) {
-    CompletableFuture<Void> future = new VertxCompletableFuture<>(context);
+    CompletableFuture<Void> future = new CompletableFuture<>();
     if (isEmpty(updatedOrganization.getId())) {
       updatedOrganization.setId(id);
     } else if (!id.equals(updatedOrganization.getId())) {
@@ -113,10 +112,10 @@ public class OrganizationStorageService extends BaseService implements Organizat
       return future;
     }
     HttpClientInterface client = getHttpClient(headers);
-    handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), client, context, headers, logger)
+    handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), client, headers, logger)
       .thenApply(existingOrganizationJson -> existingOrganizationJson.mapTo(Organization.class))
       .thenCompose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, lang, context, headers))
-      .thenAccept(ok -> handlePutRequest(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), client, context, headers,
+      .thenAccept(ok -> handlePutRequest(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), client, headers,
         logger).handle((org, t) -> {
         client.closeClient();
         if (Objects.nonNull(t)) {
@@ -136,7 +135,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
   @Override
   public CompletableFuture<Void> deleteOrganizationById(String id, Context context, Map<String, String> headers) {
     HttpClientInterface client = getHttpClient(headers);
-    return handleDeleteRequest(resourceByIdPath(ORGANIZATIONS, id), client, context, headers, logger).handle((org, t) -> {
+    return handleDeleteRequest(resourceByIdPath(ORGANIZATIONS, id), client, headers, logger).handle((org, t) -> {
       client.closeClient();
       if (Objects.nonNull(t)) {
         throw new CompletionException(t.getCause());

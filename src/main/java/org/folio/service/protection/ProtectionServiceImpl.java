@@ -9,9 +9,15 @@ import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
 import static org.folio.service.protection.AcqDesiredPermissions.MANAGE;
 import static org.folio.service.protection.ProtectedOperationType.UPDATE;
 
-import io.vertx.core.Context;
-import io.vertx.core.json.JsonArray;
-import me.escoffier.vertx.completablefuture.VertxCompletableFuture;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.folio.HttpStatus;
@@ -24,14 +30,8 @@ import org.folio.service.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
+import io.vertx.core.Context;
+import io.vertx.core.json.JsonArray;
 
 @Service
 public class ProtectionServiceImpl extends BaseService implements ProtectionService {
@@ -69,8 +69,9 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
     List<String> updatedAcqUnitIds = updatedOrg.getAcqUnitIds();
     List<String> currentAcqUnitIds = currentOrg.getAcqUnitIds();
 
-    return VertxCompletableFuture.runAsync(context, () -> verifyUserHasManagePermission(updatedAcqUnitIds, currentAcqUnitIds, getProvidedPermissions(headers)))
-    .thenCompose(ok -> verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), lang, context, headers))
+    verifyUserHasManagePermission(updatedAcqUnitIds, currentAcqUnitIds, getProvidedPermissions(headers));
+
+    return verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), lang, context, headers)
     .thenCompose(ok -> checkOperationsRestrictions(currentAcqUnitIds, Collections.singleton(UPDATE), lang, context, headers));
   }
 
