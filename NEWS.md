@@ -1,4 +1,12 @@
-## 1.2.0 - Unreleased
+## 1.3.0 - Unreleased
+
+## 1.2.0 - Released
+The primary focus of this release was to Upgrade RMB up to 32.1.0
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.1.1...v1.2.0)
+
+### Stories
+* [MODORG-21](https://issues.folio.org/browse/MODORG-21) mod-organizations: Update RMB
 
 ## 1.1.1 - Released
 The focus of this release was to fix logging issues
