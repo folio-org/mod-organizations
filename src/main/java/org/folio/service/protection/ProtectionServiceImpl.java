@@ -4,7 +4,6 @@ import static org.folio.config.Constants.EMPTY_ARRAY;
 import static org.folio.exception.ErrorCodes.ORGANIZATION_UNITS_NOT_FOUND;
 import static org.folio.exception.ErrorCodes.USER_HAS_NO_ACQ_PERMISSIONS;
 import static org.folio.exception.ErrorCodes.USER_HAS_NO_PERMISSIONS;
-import static org.folio.rest.RestVerticle.OKAPI_HEADER_PERMISSIONS;
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
 import static org.folio.service.protection.AcqDesiredPermissions.MANAGE;
 import static org.folio.service.protection.ProtectedOperationType.UPDATE;
@@ -36,6 +35,7 @@ import io.vertx.core.json.JsonArray;
 @Service
 public class ProtectionServiceImpl extends BaseService implements ProtectionService {
   private AcquisitionsUnitsService acquisitionsUnitsService;
+  public final String OKAPI_HEADER_PERMISSIONS = "X-Okapi-Permissions";
 
   @Autowired
   public void setAcquisitionsUnitsService(AcquisitionsUnitsService acquisitionsUnitsService) {

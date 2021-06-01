@@ -25,6 +25,7 @@ public class ApiTestBase {
   public static final Header X_OKAPI_URL = new Header(OKAPI_URL, "http://localhost:" + mockPort);
   public static final Header X_OKAPI_TENANT = new Header(OKAPI_HEADER_TENANT, "organizations-test");
   public static final String PATH_SEPARATOR = "/";
+  public static final String OKAPI_HEADER_PERMISSIONS = "X-Okapi-Permissions";
 
   @BeforeAll
   public static void globalSetUp() throws InterruptedException, ExecutionException, TimeoutException {

@@ -3,7 +3,6 @@ package org.folio.rest.impl;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.folio.config.Constants.ID;
-import static org.folio.rest.RestVerticle.OKAPI_HEADER_PERMISSIONS;
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_READ_ONLY_ID;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_UPDATE_ONLY_ID;
