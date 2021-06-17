@@ -1,4 +1,13 @@
+## 1.4.0 - Unreleased
+
 ## 1.3.0 - Unreleased
+The primary focus of this release was to Upgrade RMB up to 33.0.0
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.2.0...v1.3.0)
+
+### Stories
+* [MODORG-26](https://issues.folio.org/browse/MODORG-26) mod-organizations: Update RMB v33.0.0
+* [MODORG-22](https://issues.folio.org/browse/MODORG-22) Add personal data disclosure form	Andrei Makaranka
 
 ## 1.2.0 - Released
 The primary focus of this release was to Upgrade RMB up to 32.1.0
