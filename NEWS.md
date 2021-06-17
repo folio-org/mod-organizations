@@ -1,6 +1,6 @@
 ## 1.4.0 - Unreleased
 
-## 1.3.0 - Unreleased
+## 1.3.0 - Released
 The primary focus of this release was to Upgrade RMB up to 33.0.0
 
 [Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.2.0...v1.3.0)
