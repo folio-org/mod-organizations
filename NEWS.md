@@ -7,7 +7,7 @@ The primary focus of this release was to Upgrade RMB up to 33.0.0
 
 ### Stories
 * [MODORG-26](https://issues.folio.org/browse/MODORG-26) mod-organizations: Update RMB v33.0.0
-* [MODORG-22](https://issues.folio.org/browse/MODORG-22) Add personal data disclosure form	Andrei Makaranka
+* [MODORG-22](https://issues.folio.org/browse/MODORG-22) Add personal data disclosure form
 
 ## 1.2.0 - Released
 The primary focus of this release was to Upgrade RMB up to 32.1.0
