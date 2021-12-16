@@ -1,5 +1,13 @@
 ## 1.4.0 - Unreleased
 
+## 1.3.1 - Released
+This bugfix release focused on fixing Log4j vulnerability
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.3.0...v1.3.1)
+
+### Bug Fixes
+* [MODORG-30](https://issues.folio.org/browse/MODORG-30) Kiwi R3 2021 - Log4j vulnerability verification and correction
+
 ## 1.3.0 - Released
 The primary focus of this release was to Upgrade RMB up to 33.0.0
 
