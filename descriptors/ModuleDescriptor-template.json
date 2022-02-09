@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "organizations.organizations",
-      "version": "1.1",
+      "version": "1.2",
       "handlers": [
         {
           "methods": ["GET"],
@@ -72,7 +72,7 @@
   "requires": [
     {
       "id": "organizations-storage.organizations",
-      "version": "3.1"
+      "version": "3.3"
     }
   ],
   "permissionSets": [
