@@ -15,10 +15,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.HttpStatus;
 import org.folio.exception.HttpException;
+import org.folio.rest.jaxrs.model.Account;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
@@ -62,12 +64,11 @@ public class OrganizationStorageService extends BaseService implements Organizat
   }
 
   private boolean isSameAccountNumbers(Organization organization) {
-    Set<String> uniqueAccounts = new HashSet<>();
-    organization.getAccounts().stream().forEach(account -> uniqueAccounts.add(account.getAccountNo()));
-    if (organization.getAccounts().size() != uniqueAccounts.size()) {
-      return true;
-    }
-    return false;
+    Set<String> uniqueAccounts = organization.getAccounts().stream()
+      .map(Account::getAccountNo)
+      .collect(Collectors.toSet());
+
+    return organization.getAccounts().size() != uniqueAccounts.size();
   }
 
   @Override
