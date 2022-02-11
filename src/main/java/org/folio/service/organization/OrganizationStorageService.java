@@ -1,6 +1,7 @@
 package org.folio.service.organization;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.folio.exception.ErrorCodes.ACCOUNT_NUMBER_MUST_BE_UNIQUE;
 import static org.folio.exception.ErrorCodes.MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY;
 import static org.folio.service.protection.ProtectedOperationType.READ;
 import static org.folio.util.ResourcePathResolver.ORGANIZATIONS;
@@ -8,13 +9,18 @@ import static org.folio.util.ResourcePathResolver.resourceByIdPath;
 import static org.folio.util.ResourcePathResolver.resourcesPath;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.folio.HttpStatus;
 import org.folio.exception.HttpException;
+import org.folio.rest.jaxrs.model.Account;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
@@ -39,7 +45,12 @@ public class OrganizationStorageService extends BaseService implements Organizat
   public CompletableFuture<Organization> createOrganization(Organization organization, Context context,
       Map<String, String> headers) {
     HttpClientInterface client = getHttpClient(headers);
-
+    CompletableFuture<Organization> future = new CompletableFuture<>();
+    if (isSameAccountNumbers(organization)) {
+      future.completeExceptionally(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
+        ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
+      return future;
+    }
     return handlePostRequest(JsonObject.mapFrom(organization), resourcesPath(ORGANIZATIONS), client, context, headers, logger)
       .thenApply(id -> JsonObject.mapFrom(organization.withId(id))
         .mapTo(Organization.class))
@@ -50,6 +61,14 @@ public class OrganizationStorageService extends BaseService implements Organizat
         }
         return org;
       });
+  }
+
+  private boolean isSameAccountNumbers(Organization organization) {
+    Set<String> uniqueAccounts = organization.getAccounts().stream()
+      .map(Account::getAccountNo)
+      .collect(Collectors.toSet());
+
+    return organization.getAccounts().size() != uniqueAccounts.size();
   }
 
   @Override
@@ -108,7 +127,13 @@ public class OrganizationStorageService extends BaseService implements Organizat
     if (isEmpty(updatedOrganization.getId())) {
       updatedOrganization.setId(id);
     } else if (!id.equals(updatedOrganization.getId())) {
-      future.completeExceptionally(new HttpException(422, MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
+      future.completeExceptionally(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
+        MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
+      return future;
+    }
+    if (isSameAccountNumbers(updatedOrganization)) {
+      future.completeExceptionally(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
+        ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
       return future;
     }
     HttpClientInterface client = getHttpClient(headers);

@@ -4,6 +4,7 @@ import org.folio.rest.jaxrs.model.Error;
 
 public enum ErrorCodes {
 
+  ACCOUNT_NUMBER_MUST_BE_UNIQUE("accountNumberMustBeUnique", "Account number must be unique for organization"),
   GENERIC_ERROR_CODE("genericError", "Generic error"),
   MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY("idMismatch", "Mismatch between id in path and request body"),
   ORGANIZATION_UNITS_NOT_FOUND("organizationAcqUnitsNotFound", "Acquisitions units assigned to organization cannot be found"),

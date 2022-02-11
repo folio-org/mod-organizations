@@ -90,6 +90,21 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
+  @EnumSource(TestEntities.class)
+  void testPostWithAccountNumberDuplicate(TestEntities e) {
+    logger.info("===== Verify POST " + e.name() + ": Account number must be unique =====");
+
+    JsonObject entity = createAccountsArray(e.getSample());
+    Headers headers = Headers.headers(X_OKAPI_URL, new Header(X_OKAPI_TENANT.getName(), ISE_X_OKAPI_TENANT));
+
+    verifyPostRequest(e.getUrl(), entity
+      .encode(), headers, APPLICATION_JSON, HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt());
+
+    assertThat(MockServer.getInstance()
+      .getAllServeEvents(), hasSize(0));
+  }
+
+  @ParameterizedTest
   @MethodSource("getOpenForReadEntities")
   void testGetByIdReadOnlyOrNoAcqUnits(TestEntities e) {
     logger.info("===== Verify GET by ID " + e.name() + ": Successful =====");
@@ -346,7 +361,23 @@ class OrganizationApiTest extends ApiTestBase {
     expected.put(ID, UUID.randomUUID()
       .toString());
 
-    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), expected.encode(), APPLICATION_JSON, 422);
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), expected.encode(),
+      APPLICATION_JSON, HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt());
+
+    assertThat(MockServer.getInstance().getAllServeEvents().stream()
+      .filter(event -> event.getRequest().getMethod().equals(RequestMethod.PUT))
+      .collect(Collectors.toList()), hasSize(0));
+  }
+
+  @ParameterizedTest
+  @EnumSource(TestEntities.class)
+  void testPutWithAccountNumberDuplicate(TestEntities e) {
+    logger.info("===== Verify PUT by ID " + e.name() + ": Account number must be unique =====");
+
+    JsonObject entity = createAccountsArray(e.getSample());
+
+    verifyPutRequest(e.getUrl() + PATH_SEPARATOR + e.getId(), entity.encode(),
+      APPLICATION_JSON, HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt());
 
     assertThat(MockServer.getInstance().getAllServeEvents().stream()
       .filter(event -> event.getRequest().getMethod().equals(RequestMethod.PUT))
@@ -458,5 +489,24 @@ class OrganizationApiTest extends ApiTestBase {
 
   private static Stream<TestEntities> getFullProtectedEntities() {
     return fullProtectedEntities.stream();
+  }
+
+  private JsonObject createAccountsArray(JsonObject jsonObject) {
+    JsonArray accounts = new JsonArray();
+
+    JsonObject account1 = new JsonObject()
+      .put("name", "Serials")
+      .put("accountNo", "xxxx7859")
+      .put("accountStatus", "Active");
+
+    JsonObject account2 = new JsonObject()
+      .put("name", "TestAccount")
+      .put("accountNo", "xxxx7859")
+      .put("accountStatus", "Active");
+
+    accounts.add(account1).add(account2);
+    jsonObject.put("accounts", accounts);
+
+    return jsonObject;
   }
 }
