@@ -1,4 +1,13 @@
-## 1.4.0 - Unreleased
+## 1.5.0 - Unreleased
+
+## 1.4.0 - Released
+The primary focus of this release is to apply account number uniqueness
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.3.0...v1.4.0)
+
+### Stories
+* [MODORG-19](https://issues.folio.org/browse/MODORG-19) "Account number" must be unique for organization
+
 
 ## 1.3.0 - Released
 The primary focus of this release was to Upgrade RMB up to 33.0.0
