@@ -1,4 +1,12 @@
-## 1.5.0 - Unreleased
+## 1.6.0 - Unreleased
+
+## 1.5.0 - Released
+The primary focus of this release was to Upgrade RMB up to 34.1.0
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.4.0...v1.5.0)
+
+### Stories
+* [MODORG-41](https://issues.folio.org/browse/MODORG-41) Upgrade RAML Module Builder v34.1.0
 
 ## 1.4.0 - Released
 The primary focus of this release is to apply account number uniqueness
