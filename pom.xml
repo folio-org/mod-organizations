@@ -354,7 +354,7 @@
         <executions>
           <execution>
             <!-- Replace the baseUri in the RAMLs that have been copied to
-            apidocs directory so that they can be used via the local html api console. -->
+            apiDocs directory so that they can be used via the local html api console. -->
             <phase>prepare-package</phase>
             <goals>
               <goal>run</goal>
