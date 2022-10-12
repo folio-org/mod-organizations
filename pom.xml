@@ -15,11 +15,11 @@
 
   <properties>
     <aspectj.version>1.9.7</aspectj.version>
-    <raml-module-builder.version>34.1.0</raml-module-builder.version>
-    <vertx.version>4.3.1</vertx.version>
+    <raml-module-builder.version>35.0.1</raml-module-builder.version>
+    <vertx.version>4.3.4</vertx.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <rest-assured.version>5.1.1</rest-assured.version>
-    <log4j-slf4j-impl.version>2.17.2</log4j-slf4j-impl.version>
+    <log4j-slf4j-impl.version>2.19.0</log4j-slf4j-impl.version>
     <folio-di-support.version>1.6.0</folio-di-support.version>
     <wiremock.version>2.26.3</wiremock.version>
     <jsonschema_paths>acq-models/mod-orgs/schemas,raml-util/schemas,acq-models/common/schemas,acq-models/acquisitions-unit/schemas</jsonschema_paths>
@@ -354,7 +354,7 @@
         <executions>
           <execution>
             <!-- Replace the baseUri in the RAMLs that have been copied to
-            apidocs directory so that they can be used via the local html api console. -->
+            apiDocs directory so that they can be used via the local html api console. -->
             <phase>prepare-package</phase>
             <goals>
               <goal>run</goal>
