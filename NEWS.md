@@ -1,4 +1,13 @@
-## 1.6.0 - Unreleased
+## 1.7.0 - Unreleased
+
+## 1.6.0 - Released
+The primary focus of this release was to update RMB up to 35.0.1
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.5.0...v1.6.0)
+
+### Stories
+* [MODORG-43](https://issues.folio.org/browse/MODORG-43) Upgrade RAML Module Builder v35.0.1
+
 
 ## 1.5.0 - Released
 The primary focus of this release was to Upgrade RMB up to 34.1.0
