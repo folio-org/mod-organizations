@@ -104,7 +104,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
         }
       })
       .exceptionally(t -> {
-        logger.error("verifyUserIsMemberOfOrganizationUnits:: Error while getting user's units memberships", t);
+        logger.error("Error while getting user's units memberships", t);
         throw new CompletionException(t);
       });
   }
