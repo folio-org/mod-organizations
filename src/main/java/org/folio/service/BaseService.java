@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.exception.HttpException;
 import org.folio.rest.tools.client.HttpClientFactory;
@@ -47,7 +46,6 @@ public abstract class BaseService {
   public static final String ALL_UNITS_CQL = IS_DELETED_PROP + "=*";
   public static final String ACTIVE_UNITS_CQL = IS_DELETED_PROP + "==false";
   private static final Pattern CQL_SORT_BY_PATTERN = Pattern.compile("(.*)(\\ssortBy\\s.*)", Pattern.CASE_INSENSITIVE);
-  protected final Logger logger = LogManager.getLogger(this.getClass());
   public static final String ACQUISITIONS_UNIT_IDS = "acqUnitIds";
   public static final String NO_ACQ_UNIT_ASSIGNED_CQL = "cql.allRecords=1 not " + ACQUISITIONS_UNIT_IDS + " <> []";
   public static final String GET_UNITS_BY_QUERY = resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS;
@@ -68,7 +66,7 @@ public abstract class BaseService {
     try {
       return URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
     } catch (UnsupportedEncodingException e) {
-      logger.error(String.format("Error happened while attempting to encode '%s'", query), e);
+      logger.error("Error happened while attempting to encode '{}'", query, e);
       throw new CompletionException(e);
     }
   }
@@ -122,7 +120,7 @@ public abstract class BaseService {
         })
         .exceptionally(throwable -> {
           future.completeExceptionally(throwable);
-          logger.error("Put '{}' request failed. Request body: {}", recordData.encodePrettily(), endpoint, throwable);
+          logger.error("Object could not be created with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), throwable);
           return null;
         });
     } catch (Exception e) {
@@ -140,17 +138,17 @@ public abstract class BaseService {
       logger.debug("Trying to get '{}' object", endpoint);
       httpClient.request(HttpMethod.GET, endpoint, okapiHeaders)
         .thenApply(response -> {
-          logger.info("Validating response for GET request '{}'", endpoint);
+          logger.info("Validating response for get request '{}'", endpoint);
           return verifyAndExtractBody(response);
         })
         .thenAccept(body -> {
           if (logger.isInfoEnabled()) {
-            logger.info("The response body for GET request '{}', body: {}", endpoint, nonNull(body) ? body.encodePrettily() : null);
+            logger.info("The response body for get request '{}', body: {}", endpoint, nonNull(body) ? body.encodePrettily() : null);
           }
           future.complete(body);
         })
         .exceptionally(t -> {
-          logger.error("Get '{}' request failed", endpoint, t);
+          logger.error("Object could not be retrieved with using endpoint: {}", endpoint, t);
           future.completeExceptionally(t);
           return null;
         });
@@ -182,7 +180,7 @@ public abstract class BaseService {
         })
         .exceptionally(e -> {
           future.completeExceptionally(e);
-          logger.error("Put '{}' request failed. Request body: {}", endpoint, recordData.encodePrettily(), e);
+          logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), e);
           return null;
         });
     } catch (Exception e) {
@@ -206,8 +204,7 @@ public abstract class BaseService {
         .thenAccept(this::verifyResponse)
         .thenApply(future::complete)
         .exceptionally(t -> {
-          // logger.error("Error deleting '{}' object", endpoint, e);
-          logger.error("Delete '{}' request failed", endpoint, t);
+          logger.error("Object cannot be deleted with using endpoint: {}", endpoint, t);
           future.completeExceptionally(t);
           return null;
         });
