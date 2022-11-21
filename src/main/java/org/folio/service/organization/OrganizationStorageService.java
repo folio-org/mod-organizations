@@ -46,7 +46,6 @@ public class OrganizationStorageService extends BaseService implements Organizat
   @Override
   public CompletableFuture<Organization> createOrganization(Organization organization, Context context,
       Map<String, String> headers) {
-    // Should I add the organization object to log
     logger.debug("createOrganization:: Trying to create organization with name: {}", organization.getName());
     HttpClientInterface client = getHttpClient(headers);
     CompletableFuture<Organization> future = new CompletableFuture<>();

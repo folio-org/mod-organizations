@@ -170,12 +170,12 @@ public abstract class BaseService {
     CompletableFuture<Void> future = new CompletableFuture<>();
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Trying to update '{}' object and body: {}", endpoint, recordData.encodePrettily());
+        logger.debug("Trying to update object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       }
       httpClient.request(HttpMethod.PUT, recordData.toBuffer(), endpoint, okapiHeaders)
         .thenApply(this::verifyAndExtractBody)
         .thenAccept(response -> {
-          logger.info("Object was successfully created");
+          logger.info("Object was successfully updated. Record with '{}' id has been updated", endpoint);
           future.complete(null);
         })
         .exceptionally(e -> {
@@ -198,7 +198,7 @@ public abstract class BaseService {
   public CompletableFuture<Void> handleDeleteRequest(String endpoint, HttpClientInterface httpClient,
       Map<String, String> okapiHeaders, Logger logger) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    logger.debug("Trying to delete '{}' object", endpoint);
+    logger.debug("Trying to delete object with endpoint: {}", endpoint);
     try {
       httpClient.request(HttpMethod.DELETE, endpoint, okapiHeaders)
         .thenAccept(this::verifyResponse)
