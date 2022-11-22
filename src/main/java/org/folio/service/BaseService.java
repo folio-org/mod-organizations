@@ -209,7 +209,7 @@ public abstract class BaseService {
           return null;
         });
     } catch (Exception e) {
-      logger.debug("Error deleting object by endpoint '{}'", endpoint, e);
+      logger.error("Error deleting object by endpoint '{}'", endpoint, e);
       future.completeExceptionally(e);
     }
     return future;
