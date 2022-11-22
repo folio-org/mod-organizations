@@ -72,7 +72,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
     Set<String> uniqueAccounts = organization.getAccounts().stream()
       .map(Account::getAccountNo)
       .collect(Collectors.toSet());
-
+    logger.debug("isSameAccountNumbers:: match unique accounts numbers size '{}' with accounts size '{}'", uniqueAccounts, organization.getAccounts().size());
     return organization.getAccounts().size() != uniqueAccounts.size();
   }
 
@@ -138,7 +138,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
     if (isEmpty(updatedOrganization.getId())) {
       updatedOrganization.setId(id);
     } else if (!id.equals(updatedOrganization.getId())) {
-      logger.warn("updateOrganization:: Mismatch between id in path and request body");
+      logger.warn("updateOrganization:: Mismatch between id '{}' in path and request body '{}'", id, updatedOrganization.getId());
       future.completeExceptionally(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
       return future;

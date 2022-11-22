@@ -52,7 +52,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
       return getUnitsByIds(unitIds, lang, context, headers)
         .thenCompose(units -> {
           if (unitIds.size() == units.size()) {
-            logger.info("checkOperationsRestrictions:: unitIds size and fetched units size");
+            logger.info("checkOperationsRestrictions:: equal unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
             List<AcquisitionsUnit> activeUnits = units.stream()
               .filter(unit -> !unit.getIsDeleted())
               .collect(Collectors.toList());
@@ -61,7 +61,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
             }
             return CompletableFuture.completedFuture(null);
           } else {
-            logger.warn("checkOperationsRestrictions:: mismatch between unitIds size and units size");
+            logger.warn("checkOperationsRestrictions:: mismatch between unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
             throw new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(unitIds, extractUnitIds(units)));
           }
         });
@@ -104,7 +104,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
         }
       })
       .exceptionally(t -> {
-        logger.error("Error while getting user's units memberships", t);
+        logger.error("Error while getting user's '{}' units memberships by unIdsAssignedToOrg '{}'", currentUserId, unitIdsAssignedToOrg, t);
         throw new CompletionException(t);
       });
   }
