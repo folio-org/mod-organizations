@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.exception.HttpException;
 import org.folio.rest.tools.client.HttpClientFactory;
@@ -40,8 +39,6 @@ import one.util.streamex.StreamEx;
 public abstract class BaseService {
 
   public static final String SEARCH_PARAMS = "?limit=%s&offset=%s%s&lang=%s";
-  private static final String EXCEPTION_CALLING_ENDPOINT_MSG = "Exception calling %s %s";
-  private static final String CALLING_ENDPOINT_MSG = "Sending {} {}";
   private static final String ERROR_MESSAGE = "errorMessage";
   private static final String ID = "id";
   public static final String ACQUISITIONS_UNIT_ID = "acquisitionsUnitId";
@@ -49,7 +46,6 @@ public abstract class BaseService {
   public static final String ALL_UNITS_CQL = IS_DELETED_PROP + "=*";
   public static final String ACTIVE_UNITS_CQL = IS_DELETED_PROP + "==false";
   private static final Pattern CQL_SORT_BY_PATTERN = Pattern.compile("(.*)(\\ssortBy\\s.*)", Pattern.CASE_INSENSITIVE);
-  protected final Logger logger = LogManager.getLogger(this.getClass());
   public static final String ACQUISITIONS_UNIT_IDS = "acqUnitIds";
   public static final String NO_ACQ_UNIT_ASSIGNED_CQL = "cql.allRecords=1 not " + ACQUISITIONS_UNIT_IDS + " <> []";
   public static final String GET_UNITS_BY_QUERY = resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS;
@@ -70,7 +66,7 @@ public abstract class BaseService {
     try {
       return URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
     } catch (UnsupportedEncodingException e) {
-      logger.error(String.format("Error happened while attempting to encode '%s'", query), e);
+      logger.error("Error happened while attempting to encode '{}'", query, e);
       throw new CompletionException(e);
     }
   }
@@ -114,20 +110,21 @@ public abstract class BaseService {
     CompletableFuture<String> future = new CompletableFuture<>();
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Sending 'POST {}' with body: {}", endpoint, recordData.encodePrettily());
+        logger.debug("Trying to create object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       }
       httpClient.request(HttpMethod.POST, recordData.toBuffer(), endpoint, okapiHeaders)
         .thenApply(this::verifyAndExtractRecordId)
         .thenAccept(id -> {
           future.complete(id);
-          logger.debug("'POST {}' request successfully processed. Record with '{}' id has been created", endpoint, id);
+          logger.debug("Object was successfully created. Record with '{}' id has been created", id);
         })
         .exceptionally(throwable -> {
           future.completeExceptionally(throwable);
-          logger.error(String.format("'POST %s' request failed. Request body: %s", endpoint, recordData.encodePrettily()), throwable);
+          logger.error("Object could not be created with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), throwable);
           return null;
         });
     } catch (Exception e) {
+      logger.error("Error creating object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       future.completeExceptionally(e);
     }
     return future;
@@ -138,25 +135,25 @@ public abstract class BaseService {
 
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
     try {
-      logger.info("Calling GET {}", endpoint);
+      logger.debug("Trying to get object by endpoint '{}'", endpoint);
       httpClient.request(HttpMethod.GET, endpoint, okapiHeaders)
         .thenApply(response -> {
-          logger.debug("Validating response for GET {}", endpoint);
+          logger.debug("Validating response for get request '{}'", endpoint);
           return verifyAndExtractBody(response);
         })
         .thenAccept(body -> {
           if (logger.isInfoEnabled()) {
-            logger.info("The response body for GET {}: {}", endpoint, nonNull(body) ? body.encodePrettily() : null);
+            logger.info("The response body for get request '{}', body: {}", endpoint, nonNull(body) ? body.encodePrettily() : null);
           }
           future.complete(body);
         })
         .exceptionally(t -> {
-          logger.error(String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.GET, endpoint), t);
+          logger.error("Object could not be retrieved with using endpoint: {}", endpoint, t);
           future.completeExceptionally(t);
           return null;
         });
     } catch (Exception e) {
-      logger.error(String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.GET, endpoint), e);
+      logger.error("Error retrieving object by endpoint '{}'", endpoint, e);
       future.completeExceptionally(e);
     }
     return future;
@@ -173,20 +170,21 @@ public abstract class BaseService {
     CompletableFuture<Void> future = new CompletableFuture<>();
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Sending 'PUT {}' with body: {}", endpoint, recordData.encodePrettily());
+        logger.debug("Trying to update object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       }
       httpClient.request(HttpMethod.PUT, recordData.toBuffer(), endpoint, okapiHeaders)
         .thenApply(this::verifyAndExtractBody)
         .thenAccept(response -> {
-          logger.debug("'PUT {}' request successfully processed", endpoint);
+          logger.debug("Object was successfully updated. Record with '{}' id has been updated", endpoint);
           future.complete(null);
         })
         .exceptionally(e -> {
           future.completeExceptionally(e);
-          logger.error(String.format("'PUT %s' request failed. Request body: %s", endpoint, recordData.encodePrettily()), e);
+          logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), e);
           return null;
         });
     } catch (Exception e) {
+      logger.error("Error updating object by endpoint: {}, body: {}", endpoint, recordData.encodePrettily(), e);
       future.completeExceptionally(e);
     }
     return future;
@@ -200,19 +198,18 @@ public abstract class BaseService {
   public CompletableFuture<Void> handleDeleteRequest(String endpoint, HttpClientInterface httpClient,
       Map<String, String> okapiHeaders, Logger logger) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    logger.debug(CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpoint);
+    logger.debug("Trying to delete object with endpoint: {}", endpoint);
     try {
       httpClient.request(HttpMethod.DELETE, endpoint, okapiHeaders)
         .thenAccept(this::verifyResponse)
         .thenApply(future::complete)
         .exceptionally(t -> {
-          String errorMessage = String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpoint);
-          logger.error(errorMessage, t);
+          logger.error("Object cannot be deleted with using endpoint: {}", endpoint, t);
           future.completeExceptionally(t);
           return null;
         });
     } catch (Exception e) {
-      logger.error(String.format(EXCEPTION_CALLING_ENDPOINT_MSG, HttpMethod.DELETE, endpoint), e);
+      logger.error("Error deleting object by endpoint '{}'", endpoint, e);
       future.completeExceptionally(e);
     }
     return future;

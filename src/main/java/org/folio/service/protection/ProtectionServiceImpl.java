@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.HttpStatus;
 import org.folio.exception.HttpException;
 import org.folio.rest.acq.model.AcquisitionsUnit;
@@ -34,6 +36,7 @@ import io.vertx.core.json.JsonArray;
 
 @Service
 public class ProtectionServiceImpl extends BaseService implements ProtectionService {
+  protected final Logger logger = LogManager.getLogger(this.getClass());
   private AcquisitionsUnitsService acquisitionsUnitsService;
   public final String OKAPI_HEADER_PERMISSIONS = "X-Okapi-Permissions";
 
@@ -44,10 +47,12 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
 
   @Override
   public CompletableFuture<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
+    logger.debug("checkOperationsRestrictions:: Trying to check operation restrictions by unitIds: {} and '{}' operations", unitIds, operations.size());
     if (CollectionUtils.isNotEmpty(unitIds)) {
       return getUnitsByIds(unitIds, lang, context, headers)
         .thenCompose(units -> {
           if (unitIds.size() == units.size()) {
+            logger.info("checkOperationsRestrictions:: equal unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
             List<AcquisitionsUnit> activeUnits = units.stream()
               .filter(unit -> !unit.getIsDeleted())
               .collect(Collectors.toList());
@@ -56,16 +61,19 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
             }
             return CompletableFuture.completedFuture(null);
           } else {
+            logger.warn("checkOperationsRestrictions:: mismatch between unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
             throw new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(unitIds, extractUnitIds(units)));
           }
         });
     } else {
+      logger.warn("checkOperationsRestrictions:: unitIds is empty");
       return CompletableFuture.completedFuture(null);
     }
   }
 
   @Override
   public CompletableFuture<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, String lang, Context context, Map<String, String> headers) {
+    logger.debug("validateAcqUnitsOnUpdate:: Trying to verify acquisition units for updating between updateOrg '{}' and currentOrg '{}'", updatedOrg, currentOrg);
     List<String> updatedAcqUnitIds = updatedOrg.getAcqUnitIds();
     List<String> currentAcqUnitIds = currentOrg.getAcqUnitIds();
 
@@ -76,6 +84,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   }
 
   private CompletableFuture<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, String lang, Context context, Map<String, String> headers) {
+    logger.debug("getUnitsByIds:: Trying to get units by unitIds: {}", unitIds);
     String query = combineCqlExpressions("and", ALL_UNITS_CQL, convertIdsToCqlQuery(unitIds));
     return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
       .thenApply(AcquisitionsUnitCollection::getAcquisitionsUnits);
@@ -86,6 +95,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   }
 
   private CompletableFuture<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, String lang, Context context, Map<String, String> headers) {
+    logger.debug("verifyUserIsMemberOfOrganizationUnits:: Trying to verify user '{}' is member of organization units: {}", currentUserId, unitIdsAssignedToOrg);
     String query = String.format("userId==%s AND %s", currentUserId, convertIdsToCqlQuery(unitIdsAssignedToOrg, ACQUISITIONS_UNIT_ID, true));
     return acquisitionsUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, lang, context, headers)
       .thenAccept(unit -> {
@@ -94,6 +104,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
         }
       })
       .exceptionally(t -> {
+        logger.error("Error while getting user's '{}' units memberships by unIdsAssignedToOrg '{}'", currentUserId, unitIdsAssignedToOrg, t);
         throw new CompletionException(t);
       });
   }
@@ -145,6 +156,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
    * @return completable future completed successfully if all units exist and active or exceptionally otherwise
    */
   public CompletableFuture<Void> verifyIfUnitsAreActive(List<String> acqUnitIds, String lang, Context context, Map<String, String> headers) {
+    logger.debug("verifyIfUnitsAreActive:: Trying to verify if units are active by acqUnitsIds: {}", acqUnitIds);
     if (acqUnitIds.isEmpty()) {
       return CompletableFuture.completedFuture(null);
     }
