@@ -50,7 +50,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
     HttpClientInterface client = getHttpClient(headers);
     CompletableFuture<Organization> future = new CompletableFuture<>();
     if (isSameAccountNumbers(organization)) {
-      logger.warn("crateOrganization:: Account number is not unique");
+      logger.warn("crateOrganization:: Account number of organization '{}' is not unique", organization.getName());
       future.completeExceptionally(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
       return future;
@@ -72,7 +72,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
     Set<String> uniqueAccounts = organization.getAccounts().stream()
       .map(Account::getAccountNo)
       .collect(Collectors.toSet());
-    logger.debug("isSameAccountNumbers:: match unique accounts numbers size '{}' with accounts size '{}'", uniqueAccounts, organization.getAccounts().size());
+    logger.debug("isSameAccountNumbers:: match unique accounts numbers size '{}' with accounts size '{}'", uniqueAccounts.size(), organization.getAccounts().size());
     return organization.getAccounts().size() != uniqueAccounts.size();
   }
 
@@ -144,7 +144,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
       return future;
     }
     if (isSameAccountNumbers(updatedOrganization)) {
-      logger.warn("updateOrganization:: Account number is not unique");
+      logger.warn("updateOrganization:: Account number of organization '{}' is not unique", id);
       future.completeExceptionally(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
       return future;

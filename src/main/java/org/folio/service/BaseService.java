@@ -135,10 +135,10 @@ public abstract class BaseService {
 
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
     try {
-      logger.debug("Trying to get '{}' object", endpoint);
+      logger.debug("Trying to get object by endpoint '{}'", endpoint);
       httpClient.request(HttpMethod.GET, endpoint, okapiHeaders)
         .thenApply(response -> {
-          logger.info("Validating response for get request '{}'", endpoint);
+          logger.debug("Validating response for get request '{}'", endpoint);
           return verifyAndExtractBody(response);
         })
         .thenAccept(body -> {
@@ -175,7 +175,7 @@ public abstract class BaseService {
       httpClient.request(HttpMethod.PUT, recordData.toBuffer(), endpoint, okapiHeaders)
         .thenApply(this::verifyAndExtractBody)
         .thenAccept(response -> {
-          logger.info("Object was successfully updated. Record with '{}' id has been updated", endpoint);
+          logger.debug("Object was successfully updated. Record with '{}' id has been updated", endpoint);
           future.complete(null);
         })
         .exceptionally(e -> {
