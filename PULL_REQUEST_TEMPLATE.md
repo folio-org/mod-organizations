@@ -1,6 +1,6 @@
 <!--
   If you have a relevant JIRA issue number, please put it in the issue title.
-  Example: MODORDERS-70 Orders schema updates
+  Example: MODORG-70 Organization schema updates
 
   TL;DR
     - https://www.youtube.com/watch?v=5aHmO_S8FQ4
@@ -23,7 +23,7 @@
   section."
 
   If you have a relevant JIRA issue, add a link directly to the issue URL here.
-  Example: https://issues.folio.org/browse/MODORDERS-70
+  Example: https://issues.folio.org/browse/MODORG-70
  -->
 
 ## Approach
