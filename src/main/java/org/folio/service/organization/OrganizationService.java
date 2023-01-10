@@ -1,8 +1,8 @@
 package org.folio.service.organization;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
+import io.vertx.core.Future;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 
@@ -18,7 +18,7 @@ public interface OrganizationService {
    * @param headers      OKAPI headers
    * @return created {@link Organization}
    */
-  CompletableFuture<Organization> createOrganization(Organization organization, Context context, Map<String, String> headers);
+  Future<Organization> createOrganization(Organization organization, Context context, Map<String, String> headers);
 
   /**
    * This method returns {@link Organization} by ID
@@ -28,7 +28,7 @@ public interface OrganizationService {
    * @param headers OKAPI headers
    * @return {@link Organization}
    */
-  CompletableFuture<Organization> getOrganizationById(String id, String lang, Context context, Map<String, String> headers);
+  Future<Organization> getOrganizationById(String id, String lang, Context context, Map<String, String> headers);
 
   /**
    * This method returns {@link OrganizationCollection} by query
@@ -41,7 +41,7 @@ public interface OrganizationService {
    * @param headers OKAPI headers
    * @return collection of organizations {@link OrganizationCollection}
    */
-  CompletableFuture<OrganizationCollection> getOrganizationCollection(int offset, int limit, String lang, String query,
+  Future<OrganizationCollection> getOrganizationCollection(int offset, int limit, String lang, String query,
       Context context, Map<String, String> headers);
 
   /**
@@ -51,9 +51,9 @@ public interface OrganizationService {
    * @param entity  updated {@link Organization} entity
    * @param context Vert.X context
    * @param headers OKAPI headers
-   * @return void completable future
+   * @return void future
    */
-  CompletableFuture<Void> updateOrganizationById(String id, Organization entity, String lang, Context context, Map<String, String> headers);
+  Future<Void> updateOrganizationById(String id, Organization entity, String lang, Context context, Map<String, String> headers);
 
   /**
    * This method deletes {@link Organization} by ID
@@ -61,7 +61,7 @@ public interface OrganizationService {
    * @param id      deleted organization's id
    * @param context Vert.X context
    * @param headers OKAPI headers
-   * @return void completable future
+   * @return void future
    */
-  CompletableFuture<Void> deleteOrganizationById(String id, Context context, Map<String, String> headers);
+  Future<Void> deleteOrganizationById(String id, Context context, Map<String, String> headers);
 }

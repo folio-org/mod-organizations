@@ -13,10 +13,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.folio.HttpStatus;
 import org.folio.exception.HttpException;
 import org.folio.rest.acq.model.AcquisitionsUnit;
-import org.folio.rest.acq.model.AcquisitionsUnitCollection;
+import org.folio.rest.acq.model.AcquisitionsUnitMembershipCollection;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.service.BaseService;
@@ -38,7 +39,7 @@ import io.vertx.core.json.JsonArray;
 public class ProtectionServiceImpl extends BaseService implements ProtectionService {
   protected final Logger logger = LogManager.getLogger(this.getClass());
   private AcquisitionsUnitsService acquisitionsUnitsService;
-  public final String OKAPI_HEADER_PERMISSIONS = "X-Okapi-Permissions";
+  public static final String OKAPI_HEADER_PERMISSIONS = "X-Okapi-Permissions";
 
   @Autowired
   public void setAcquisitionsUnitsService(AcquisitionsUnitsService acquisitionsUnitsService) {
@@ -46,11 +47,12 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   }
 
   @Override
-  public CompletableFuture<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
+  public Future<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
     logger.debug("checkOperationsRestrictions:: Trying to check operation restrictions by unitIds: {} and '{}' operations", unitIds, operations.size());
+    Promise<Void> promise = Promise.promise();
     if (CollectionUtils.isNotEmpty(unitIds)) {
       return getUnitsByIds(unitIds, lang, context, headers)
-        .thenCompose(units -> {
+        .compose(units -> {
           if (unitIds.size() == units.size()) {
             logger.info("checkOperationsRestrictions:: equal unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
             List<AcquisitionsUnit> activeUnits = units.stream()
@@ -59,54 +61,65 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
             if (!activeUnits.isEmpty() && applyMergingStrategy(activeUnits, operations)) {
               return verifyUserIsMemberOfOrganizationUnits(extractUnitIds(activeUnits), headers.get(OKAPI_USERID_HEADER), lang, context, headers);
             }
-            return CompletableFuture.completedFuture(null);
           } else {
             logger.warn("checkOperationsRestrictions:: mismatch between unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
             throw new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(unitIds, extractUnitIds(units)));
           }
+          promise.complete();
+          return promise.future();
         });
     } else {
       logger.warn("checkOperationsRestrictions:: unitIds is empty");
-      return CompletableFuture.completedFuture(null);
+      promise.complete();
+      return promise.future();
     }
   }
 
   @Override
-  public CompletableFuture<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, String lang, Context context, Map<String, String> headers) {
+  public Future<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, String lang, Context context, Map<String, String> headers) {
     logger.debug("validateAcqUnitsOnUpdate:: Trying to verify acquisition units for updating between updateOrg '{}' and currentOrg '{}'", updatedOrg, currentOrg);
     List<String> updatedAcqUnitIds = updatedOrg.getAcqUnitIds();
     List<String> currentAcqUnitIds = currentOrg.getAcqUnitIds();
 
     verifyUserHasManagePermission(updatedAcqUnitIds, currentAcqUnitIds, getProvidedPermissions(headers));
-
     return verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), lang, context, headers)
-    .thenCompose(ok -> checkOperationsRestrictions(currentAcqUnitIds, Collections.singleton(UPDATE), lang, context, headers));
+      .compose(ok -> checkOperationsRestrictions(currentAcqUnitIds, Collections.singleton(UPDATE), lang, context, headers));
   }
 
-  private CompletableFuture<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, String lang, Context context, Map<String, String> headers) {
+  private Future<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, String lang, Context context, Map<String, String> headers) {
     logger.debug("getUnitsByIds:: Trying to get units by unitIds: {}", unitIds);
+    Promise<List<AcquisitionsUnit>> promise = Promise.promise();
     String query = combineCqlExpressions("and", ALL_UNITS_CQL, convertIdsToCqlQuery(unitIds));
     return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
-      .thenApply(AcquisitionsUnitCollection::getAcquisitionsUnits);
+      .compose(ids -> {
+        promise.complete(ids.getAcquisitionsUnits());
+      return promise.future();
+      });
   }
 
   private boolean applyMergingStrategy(List<AcquisitionsUnit> units, Set<ProtectedOperationType> operations) {
     return units.stream().allMatch(unit -> operations.stream().anyMatch(operation -> operation.isProtected(unit)));
   }
 
-  private CompletableFuture<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, String lang, Context context, Map<String, String> headers) {
+  private Future<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, String lang, Context context, Map<String, String> headers) {
     logger.debug("verifyUserIsMemberOfOrganizationUnits:: Trying to verify user '{}' is member of organization units: {}", currentUserId, unitIdsAssignedToOrg);
     String query = String.format("userId==%s AND %s", currentUserId, convertIdsToCqlQuery(unitIdsAssignedToOrg, ACQUISITIONS_UNIT_ID, true));
+    Promise<AcquisitionsUnitMembershipCollection> promise = Promise.promise();
+    Promise<Void> promise1 = Promise.promise();
     return acquisitionsUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, lang, context, headers)
-      .thenAccept(unit -> {
+      .compose(unit -> {
         if (unit.getTotalRecords() == 0) {
-          throw new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS);
+          promise1.fail(new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS));
         }
+        else {
+        promise1.complete();}
+        return promise1.future();
       })
-      .exceptionally(t -> {
+      .onFailure(t -> {
         logger.error("Error while getting user's '{}' units memberships by unIdsAssignedToOrg '{}'", currentUserId, unitIdsAssignedToOrg, t);
-        throw new CompletionException(t);
+        promise.fail(new CompletionException(t));
       });
+
   }
 
   private List<String> extractUnitIds(List<AcquisitionsUnit> activeUnits) {
@@ -153,23 +166,28 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
    * Verifies if all acquisition units exist and active based on passed ids
    *
    * @param acqUnitIds list of unit IDs.
-   * @return completable future completed successfully if all units exist and active or exceptionally otherwise
+   * @return future completed successfully if all units exist and active or exceptionally otherwise
    */
-  public CompletableFuture<Void> verifyIfUnitsAreActive(List<String> acqUnitIds, String lang, Context context, Map<String, String> headers) {
+  public Future<Void> verifyIfUnitsAreActive(List<String> acqUnitIds, String lang, Context context, Map<String, String> headers) {
     logger.debug("verifyIfUnitsAreActive:: Trying to verify if units are active by acqUnitsIds: {}", acqUnitIds);
+    Promise<Void> promise = Promise.promise();
     if (acqUnitIds.isEmpty()) {
-      return CompletableFuture.completedFuture(null);
+      promise.complete();
+      return promise.future();
     }
-
-    return getUnitsByIds(acqUnitIds, lang, context, headers).thenAccept(units -> {
+    return getUnitsByIds(acqUnitIds, lang, context, headers).compose(units -> {
       List<String> activeUnitIds = units.stream()
         .filter(unit -> !unit.getIsDeleted())
         .map(AcquisitionsUnit::getId)
         .collect(Collectors.toList());
 
       if (acqUnitIds.size() != activeUnitIds.size()) {
-        throw new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(acqUnitIds, activeUnitIds));
+        promise.fail(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(acqUnitIds, activeUnitIds)));
       }
-    });
+      promise.complete();
+      return promise.future();
+    }).onFailure(t ->
+      promise.fail(new CompletionException(t))
+    );
   }
 }

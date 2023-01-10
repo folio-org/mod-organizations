@@ -1,13 +1,12 @@
 package org.folio.service;
 
-import static java.util.Objects.nonNull;
 import static javax.ws.rs.core.HttpHeaders.LOCATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.folio.HttpStatus.HTTP_CREATED;
 import static org.folio.config.Constants.OKAPI_URL;
-import static org.folio.rest.RestVerticle.OKAPI_HEADER_TENANT;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_MEMBERSHIPS;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_UNITS;
 import static org.folio.util.ResourcePathResolver.resourcesPath;
@@ -16,30 +15,34 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.client.predicate.ErrorConverter;
+import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.folio.exception.HttpException;
-import org.folio.rest.tools.client.HttpClientFactory;
-import org.folio.rest.tools.client.interfaces.HttpClientInterface;
-import org.folio.rest.tools.utils.TenantTool;
+import org.folio.okapi.common.WebClientFactory;
+import org.folio.rest.client.RequestContext;
 
 import io.vertx.core.Context;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import one.util.streamex.StreamEx;
 
 public abstract class BaseService {
-
   public static final String SEARCH_PARAMS = "?limit=%s&offset=%s%s&lang=%s";
-  private static final String ERROR_MESSAGE = "errorMessage";
   private static final String ID = "id";
   public static final String ACQUISITIONS_UNIT_ID = "acquisitionsUnitId";
   public static final String IS_DELETED_PROP = "isDeleted";
@@ -51,11 +54,13 @@ public abstract class BaseService {
   public static final String GET_UNITS_BY_QUERY = resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS;
   public static final String GET_UNITS_MEMBERSHIPS_BY_QUERY = resourcesPath(ACQUISITIONS_MEMBERSHIPS) + SEARCH_PARAMS;
 
+  private static final ErrorConverter ERROR_CONVERTER = ErrorConverter.createFullBody(
+    result -> new HttpException(result.response().statusCode(), result.response().bodyAsString()));
+  private static final ResponsePredicate SUCCESS_RESPONSE_PREDICATE = ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, ERROR_CONVERTER);
+
   public static String buildQuery(String query, Logger logger) {
     return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query, logger);
   }
-
-
 
   /**
    * @param query  string representing CQL query
@@ -72,91 +77,74 @@ public abstract class BaseService {
   }
 
   /**
-   * Some requests do not have body and in happy flow do not produce response body. The Accept header is required for calls to
-   * storage
-   */
-  private static void setDefaultHeaders(HttpClientInterface httpClient) {
-    // The RMB's HttpModuleClient2.ACCEPT is in sentence case. Using the same format to avoid duplicates (issues migrating to RMB
-    // 27.1.1)
-    httpClient.setDefaultHeaders(Collections.singletonMap("Accept", APPLICATION_JSON + ", " + TEXT_PLAIN));
-  }
-
-  public HttpClientInterface getHttpClient(Map<String, String> okapiHeaders, boolean setDefaultHeaders) {
-    final String okapiURL = okapiHeaders.getOrDefault(OKAPI_URL, "");
-    final String tenantId = TenantTool.calculateTenantId(okapiHeaders.get(OKAPI_HEADER_TENANT));
-
-    HttpClientInterface httpClient = HttpClientFactory.getHttpClient(okapiURL, tenantId);
-
-    // Some requests do not have body and in happy flow do not produce response body. The Accept header is required for calls to
-    // storage
-    if (setDefaultHeaders) {
-      setDefaultHeaders(httpClient);
-    }
-    return httpClient;
-  }
-
-  public HttpClientInterface getHttpClient(Map<String, String> okapiHeaders) {
-    return getHttpClient(okapiHeaders, true);
-  }
-
-  /**
    * A common method to create a new entry in the storage based on the Json Object.
    *
    * @param recordData json to post
-   * @return completable future holding id of newly created entity Record or an exception if process failed
+   * @return future holding id of newly created entity Record or an exception if process failed
    */
-  public CompletableFuture<String> handlePostRequest(JsonObject recordData, String endpoint, HttpClientInterface httpClient,
-      Context ctx, Map<String, String> okapiHeaders, Logger logger) {
-    CompletableFuture<String> future = new CompletableFuture<>();
+  public Future<String> handlePostRequest(JsonObject recordData, String endpoint,
+      RequestContext requestContext, Logger logger) {
+    Promise<String> promise = Promise.promise();
+    var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Trying to create object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       }
-      httpClient.request(HttpMethod.POST, recordData.toBuffer(), endpoint, okapiHeaders)
-        .thenApply(this::verifyAndExtractRecordId)
-        .thenAccept(id -> {
-          future.complete(id);
-          logger.debug("Object was successfully created. Record with '{}' id has been created", id);
+      return getVertxWebClient(requestContext.getContext())
+        .postAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint)).putHeaders(caseInsensitiveHeader)
+        .expect(SUCCESS_RESPONSE_PREDICATE)
+        .sendJson(recordData)
+        .compose(this::verifyAndExtractRecordId)
+        .compose(id -> {
+          promise.complete(id);
+          if (logger.isDebugEnabled()) {
+            logger.debug("Object was successfully created. Record with '{}' id has been created", id);
+          }
+          return promise.future();
         })
-        .exceptionally(throwable -> {
-          future.completeExceptionally(throwable);
-          logger.error("Object could not be created with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), throwable);
-          return null;
-        });
+        .onFailure(t ->
+          promise.fail(new CompletionException(t))
+        );
     } catch (Exception e) {
       logger.error("Error creating object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
-      future.completeExceptionally(e);
+      promise.fail(new CompletionException(e));
     }
-    return future;
+    return promise.future();
   }
 
-  public CompletableFuture<JsonObject> handleGetRequest(String endpoint, HttpClientInterface httpClient,
-      Map<String, String> okapiHeaders, Logger logger) {
-
-    CompletableFuture<JsonObject> future = new CompletableFuture<>();
+  /**
+   * A common method to get an organization from the storage based on the Json Object.
+   *
+   * @return future jsonObject of created entity Record or an exception if failed
+   */
+  public Future<JsonObject> handleGetRequest(String endpoint, RequestContext requestContext, Logger logger) {
+    Promise<JsonObject> promise = Promise.promise();
+    var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
     try {
-      logger.debug("Trying to get object by endpoint '{}'", endpoint);
-      httpClient.request(HttpMethod.GET, endpoint, okapiHeaders)
-        .thenApply(response -> {
-          logger.debug("Validating response for get request '{}'", endpoint);
-          return verifyAndExtractBody(response);
-        })
-        .thenAccept(body -> {
-          if (logger.isInfoEnabled()) {
-            logger.info("The response body for get request '{}', body: {}", endpoint, nonNull(body) ? body.encodePrettily() : null);
+      if(logger.isDebugEnabled()) {
+        logger.debug("Trying to get object by endpoint '{}'", endpoint);
+      }
+      return getVertxWebClient(requestContext.getContext()).getAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
+        .putHeaders(caseInsensitiveHeader)
+        .expect(SUCCESS_RESPONSE_PREDICATE)
+        .send()
+        .map(HttpResponse::bodyAsJsonObject)
+        .compose(jsonObject -> {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Successfully retrieved: {}", jsonObject.encodePrettily());
           }
-          future.complete(body);
+          promise.complete(jsonObject);
+          return promise.future();
         })
-        .exceptionally(t -> {
-          logger.error("Object could not be retrieved with using endpoint: {}", endpoint, t);
-          future.completeExceptionally(t);
-          return null;
+        .onFailure(t -> {
+          logger.error("Error getting object by endpoint '{}'", endpoint);
+          promise.fail(new CompletionException(t));
         });
     } catch (Exception e) {
-      logger.error("Error retrieving object by endpoint '{}'", endpoint, e);
-      future.completeExceptionally(e);
+      logger.error("Error getting object by endpoint '{}'", endpoint);
+      promise.fail(new CompletionException(e));
     }
-    return future;
+    return promise.future();
   }
 
   /**
@@ -165,29 +153,34 @@ public abstract class BaseService {
    * @param recordData json to use for update operation
    * @param endpoint   endpoint
    */
-  public CompletableFuture<Void> handlePutRequest(String endpoint, JsonObject recordData, HttpClientInterface httpClient,
-       Map<String, String> okapiHeaders, Logger logger) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
+  public Future<Void> handlePutRequest(String endpoint, JsonObject recordData, Logger logger, RequestContext context) {
+    Promise<Void> promise = Promise.promise();
+    var caseInsensitiveHeader = convertToCaseInsensitiveMap(context.getHeaders());
     try {
-      if (logger.isDebugEnabled()) {
+      if(logger.isDebugEnabled()) {
         logger.debug("Trying to update object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       }
-      httpClient.request(HttpMethod.PUT, recordData.toBuffer(), endpoint, okapiHeaders)
-        .thenApply(this::verifyAndExtractBody)
-        .thenAccept(response -> {
-          logger.debug("Object was successfully updated. Record with '{}' id has been updated", endpoint);
-          future.complete(null);
+      return getVertxWebClient(context.getContext())
+        .putAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
+        .putHeaders(caseInsensitiveHeader)
+        .expect(SUCCESS_RESPONSE_PREDICATE)
+        .sendJson(recordData)
+        .compose(response -> {
+          if(logger.isDebugEnabled()) {
+            logger.debug("Object was successfully updated. Record with '{}' id has been updated", endpoint);
+          }
+          promise.complete();
+          return promise.future();
         })
-        .exceptionally(e -> {
-          future.completeExceptionally(e);
-          logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), e);
-          return null;
+        .onFailure(t -> {
+          promise.fail(new CompletionException(t));
+          logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), t);
         });
     } catch (Exception e) {
       logger.error("Error updating object by endpoint: {}, body: {}", endpoint, recordData.encodePrettily(), e);
-      future.completeExceptionally(e);
+      promise.fail(new CompletionException(e));
     }
-    return future;
+    return promise.future();
   }
 
   /**
@@ -195,52 +188,54 @@ public abstract class BaseService {
    *
    * @param endpoint endpoint
    */
-  public CompletableFuture<Void> handleDeleteRequest(String endpoint, HttpClientInterface httpClient,
-      Map<String, String> okapiHeaders, Logger logger) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    logger.debug("Trying to delete object with endpoint: {}", endpoint);
+  public Future<Void> handleDeleteRequest(String endpoint, RequestContext requestContext, Logger logger) {
+    Promise<Void> promise = Promise.promise();
+    var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
     try {
-      httpClient.request(HttpMethod.DELETE, endpoint, okapiHeaders)
-        .thenAccept(this::verifyResponse)
-        .thenApply(future::complete)
-        .exceptionally(t -> {
+      if(logger.isDebugEnabled()) {
+        logger.debug("Trying to delete object with endpoint: {}", endpoint);
+      }
+      getVertxWebClient(requestContext.getContext())
+        .deleteAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
+        .putHeaders(caseInsensitiveHeader)
+        .expect(SUCCESS_RESPONSE_PREDICATE)
+        .send()
+        .compose(res -> {
+          promise.complete();
+        return promise.future();
+        })
+        .onFailure(t -> {
           logger.error("Object cannot be deleted with using endpoint: {}", endpoint, t);
-          future.completeExceptionally(t);
-          return null;
+          promise.fail(new CompletionException(t));
+
         });
     } catch (Exception e) {
       logger.error("Error deleting object by endpoint '{}'", endpoint, e);
-      future.completeExceptionally(e);
+      promise.fail(new CompletionException(e));
     }
-    return future;
+    return promise.future();
   }
 
-  public JsonObject verifyAndExtractBody(org.folio.rest.tools.client.Response response) {
-    if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
-      throw new HttpException(response.getCode(), response.getError()
-        .getString(ERROR_MESSAGE));
+  private JsonObject verifyAndExtractBody(HttpResponse<Buffer> response) {
+    if (ObjectUtils.notEqual(response.statusCode(),HTTP_CREATED.toInt())) {
+      throw new HttpException(response.statusCode(), response.body().toString());
     }
-    return response.getBody();
+    return response.bodyAsJsonObject();
   }
 
-  public void verifyResponse(org.folio.rest.tools.client.Response response) {
-    if (!org.folio.rest.tools.client.Response.isSuccess(response.getCode())) {
-      throw new CompletionException(new HttpException(response.getCode(), response.getError()
-        .getString(ERROR_MESSAGE)));
-    }
-  }
-
-  private String verifyAndExtractRecordId(org.folio.rest.tools.client.Response response) {
+  private Future<String> verifyAndExtractRecordId(HttpResponse<Buffer> response) {
+    Promise<String> promise = Promise.promise();
     JsonObject body = verifyAndExtractBody(response);
     String id;
     if (body != null && !body.isEmpty() && body.containsKey(ID)) {
       id = body.getString(ID);
     } else {
-      String location = response.getHeaders()
+      String location = response.headers()
         .get(LOCATION);
       id = location.substring(location.lastIndexOf('/') + 1);
     }
-    return id;
+    promise.complete(id);
+    return promise.future();
   }
 
   public static String combineCqlExpressions(String operator, String... expressions) {
@@ -275,4 +270,27 @@ public abstract class BaseService {
     String prefix = fieldName + (strictMatch ? "==(" : "=(");
     return StreamEx.of(values).joining(" or ", prefix, ")");
   }
+
+  private MultiMap convertToCaseInsensitiveMap(Map<String, String> okapiHeaders) {
+    return MultiMap.caseInsensitiveMultiMap()
+      .addAll(okapiHeaders)
+      // set default Accept header
+      .add("Accept", APPLICATION_JSON + ", " + TEXT_PLAIN);
+  }
+
+  private WebClient getVertxWebClient(Context context) {
+    WebClientOptions options = new WebClientOptions();
+    options.setLogActivity(true);
+    options.setKeepAlive(true);
+    options.setConnectTimeout(2000);
+    options.setIdleTimeout(5000);
+
+    return WebClientFactory.getWebClient(context.owner(), options);
+  }
+
+  private String buildAbsEndpoint(MultiMap okapiHeaders, String endpoint) {
+    var okapiURL = okapiHeaders.get(OKAPI_URL);
+    return okapiURL + endpoint;
+  }
+
 }

@@ -1,11 +1,11 @@
 package org.folio.rest.impl;
 
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import io.vertx.core.Promise;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -44,15 +44,16 @@ public class TestSuite {
     conf.put("http.port", okapiPort);
 
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
-    CompletableFuture<String> deploymentComplete = new CompletableFuture<>();
+    Promise<String> deploymentComplete = Promise.promise();
     vertx.deployVerticle(RestVerticle.class.getName(), opt, res -> {
       if (res.succeeded()) {
         deploymentComplete.complete(res.result());
       } else {
-        deploymentComplete.completeExceptionally(res.cause());
+        deploymentComplete.fail(res.cause());
       }
     });
-    deploymentComplete.get(60, TimeUnit.SECONDS);
+
+    deploymentComplete.future().toCompletionStage().toCompletableFuture().get(60, TimeUnit.SECONDS);
     isInitialized = true;
   }
 
