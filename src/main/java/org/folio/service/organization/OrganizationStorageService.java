@@ -45,8 +45,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
   private AcquisitionsUnitsService acquisitionsUnitsService;
 
   @Override
-  public Future<Organization> createOrganization(Organization organization, Context context,
-                                         Map<String, String> headers) {
+  public Future<Organization> createOrganization(Organization organization, Context context, Map<String, String> headers) {
     logger.debug("createOrganization:: Trying to create organization with name: {}", organization.getName());
     RequestContext requestContext = new RequestContext(context, headers);
     Promise<Organization> promise = Promise.promise();
@@ -189,7 +188,6 @@ public class OrganizationStorageService extends BaseService implements Organizat
     logger.debug("deleteOrganizationById:: Trying to delete organization by id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
     Promise<Void> promise = Promise.promise();
-
     return handleDeleteRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
       .compose(t -> {
         promise.complete();
@@ -198,7 +196,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
       .onFailure(t -> {
       if (Objects.nonNull(t)) {
         logger.warn("Error deleting organization with id: {}", id, t);
-        promise.fail(new CompletionException(t.getCause()));
+        promise.fail(new CompletionException(t));
       }
     });
   }

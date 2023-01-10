@@ -48,7 +48,7 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
       .onFailure(t -> {
         if (Objects.nonNull(t)) {
           logger.warn("getAcquisitionsUnits:: Error getting acquisition units by endpoint: {}", endpoint, t);
-          promise.fail(new CompletionException(t.getCause()));
+          promise.fail(new CompletionException(t));
         }
       });
   }
