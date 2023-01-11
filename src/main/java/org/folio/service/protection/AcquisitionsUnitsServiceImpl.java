@@ -39,7 +39,7 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
     }
     String endpoint = String.format(GET_UNITS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
     return handleGetRequest(endpoint, requestContext, logger)
-      .compose(jsonUnits -> Future.succeededFuture(jsonUnits.mapTo(AcquisitionsUnitCollection.class)));
+      .map(jsonUnits -> jsonUnits.mapTo(AcquisitionsUnitCollection.class));
   }
 
   @Override
@@ -74,32 +74,33 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
 
   private Future<List<String>> getAcqUnitIdsForSearch(String lang, Context context, Map<String, String> headers) {
     return getAcqUnitIdsForUser(headers.get(OKAPI_USERID_HEADER), lang, context, headers)
-      .compose(unitsForUser -> getOpenForReadAcqUnitIds(lang, context, headers).compose(unitsAllowRead -> {
+      .compose(unitsForUser -> getOpenForReadAcqUnitIds(lang, context, headers)
+        .map(unitsAllowRead -> {
         List<String> list =  StreamEx.of(unitsForUser, unitsAllowRead)
           .flatCollection(strings -> strings)
           .distinct()
           .toList();
-        return Future.succeededFuture(list);
+        return list;
       }));
   }
 
   private Future<List<String>> getAcqUnitIdsForUser(String userId, String lang, Context context, Map<String, String> headers) {
     logger.debug("getAcqUnitIdsForUser:: Trying to get acquisition unit ids with userId: {}", userId);
     return getAcquisitionsUnitsMemberships("userId==" + userId, 0, Integer.MAX_VALUE, lang, context, headers)
-      .compose(memberships -> {
+      .map(memberships -> {
         List<String> ids = memberships.getAcquisitionsUnitMemberships()
           .stream()
           .map(AcquisitionsUnitMembership::getAcquisitionsUnitId)
           .collect(Collectors.toList());
           logger.debug("getAcqUnitIdsForUser:: User belongs to {} acq units: {}", ids.size(), StreamEx.of(ids).joining(", "));
-        return Future.succeededFuture(ids);
+        return ids;
       });
   }
 
   private Future<List<String>> getOpenForReadAcqUnitIds(String lang, Context context, Map<String, String> headers) {
     logger.debug("getOpenForReadAcqUnitIds:: Trying to get acquisition unit ids with open status");
     return getAcquisitionsUnits("protectRead==false", 0, Integer.MAX_VALUE, lang, context, headers)
-      .compose(units -> {
+      .map(units -> {
         List<String> ids = units.getAcquisitionsUnits()
           .stream()
           .map(AcquisitionsUnit::getId)
@@ -107,7 +108,7 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
         if (logger.isDebugEnabled()) {
           logger.debug("getOpenForReadAcqUnitIds:: {} acq units with 'protectRead==false' are found: {}", ids.size(), StreamEx.of(ids).joining(", "));
         }
-    return Future.succeededFuture(ids);
-    });
+        return ids;
+      });
   }
 }

@@ -48,7 +48,6 @@ public class OrganizationStorageService extends BaseService implements Organizat
   public Future<Organization> createOrganization(Organization organization, Context context, Map<String, String> headers) {
     logger.debug("createOrganization:: Trying to create organization with name: {}", organization.getName());
     RequestContext requestContext = new RequestContext(context, headers);
-    Promise<Organization> promise = Promise.promise();
 
     if (isSameAccountNumbers(organization)) {
       logger.warn("crateOrganization:: Account number of organization '{}' is not unique", organization.getName());
@@ -56,13 +55,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
     return handlePostRequest(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext, logger)
-      .compose(Future::succeededFuture)
-        .onFailure(t -> {
-          if (Objects.nonNull(t)) {
-            logger.warn("Error creating organization with name: {}", organization.getName(), t);
-            promise.fail(new CompletionException(t));
-          }
-        });
+      .compose(Future::succeededFuture);
   }
 
   private boolean isSameAccountNumbers(Organization organization) {

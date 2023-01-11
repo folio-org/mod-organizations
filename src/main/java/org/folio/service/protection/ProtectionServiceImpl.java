@@ -84,7 +84,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
     logger.debug("getUnitsByIds:: Trying to get units by unitIds: {}", unitIds);
     String query = combineCqlExpressions("and", ALL_UNITS_CQL, convertIdsToCqlQuery(unitIds));
     return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
-      .compose(ids -> Future.succeededFuture(ids.getAcquisitionsUnits()));
+      .map(ids -> (ids.getAcquisitionsUnits()));
   }
 
   private boolean applyMergingStrategy(List<AcquisitionsUnit> units, Set<ProtectedOperationType> operations) {
