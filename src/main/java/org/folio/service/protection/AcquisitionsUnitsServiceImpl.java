@@ -78,30 +78,25 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
     return getAcqUnitIdsForSearch(lang, context, headers)
       .compose(ids -> {
         if (ids.isEmpty()) {
-          promise.complete(NO_ACQ_UNIT_ASSIGNED_CQL);
-          return promise.future();
+          return Future.succeededFuture(NO_ACQ_UNIT_ASSIGNED_CQL);
         }
-        promise.complete(String.format("%s or (%s)", convertIdsToCqlQuery(ids, ACQUISITIONS_UNIT_IDS, false), NO_ACQ_UNIT_ASSIGNED_CQL));
-        return promise.future();
+        return Future.succeededFuture(String.format("%s or (%s)", convertIdsToCqlQuery(ids, ACQUISITIONS_UNIT_IDS, false), NO_ACQ_UNIT_ASSIGNED_CQL));
       });
   }
 
   private Future<List<String>> getAcqUnitIdsForSearch(String lang, Context context, Map<String, String> headers) {
-    Promise<List<String>> promise = Promise.promise();
     return getAcqUnitIdsForUser(headers.get(OKAPI_USERID_HEADER), lang, context, headers)
       .compose(unitsForUser -> getOpenForReadAcqUnitIds(lang, context, headers).compose(unitsAllowRead -> {
         List<String> list =  StreamEx.of(unitsForUser, unitsAllowRead)
           .flatCollection(strings -> strings)
           .distinct()
           .toList();
-        promise.complete(list);
-        return promise.future();
+        return Future.succeededFuture(list);
       }));
   }
 
   private Future<List<String>> getAcqUnitIdsForUser(String userId, String lang, Context context, Map<String, String> headers) {
     logger.debug("getAcqUnitIdsForUser:: Trying to get acquisition unit ids with userId: {}", userId);
-    Promise<List<String>> promise = Promise.promise();
     return getAcquisitionsUnitsMemberships("userId==" + userId, 0, Integer.MAX_VALUE, lang, context, headers)
       .compose(memberships -> {
         List<String> ids = memberships.getAcquisitionsUnitMemberships()
@@ -109,14 +104,12 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
           .map(AcquisitionsUnitMembership::getAcquisitionsUnitId)
           .collect(Collectors.toList());
           logger.debug("getAcqUnitIdsForUser:: User belongs to {} acq units: {}", ids.size(), StreamEx.of(ids).joining(", "));
-        promise.complete(ids);
-        return promise.future();
+        return Future.succeededFuture(ids);
       });
   }
 
   private Future<List<String>> getOpenForReadAcqUnitIds(String lang, Context context, Map<String, String> headers) {
     logger.debug("getOpenForReadAcqUnitIds:: Trying to get acquisition unit ids with open status");
-    Promise<List<String>> promise = Promise.promise();
     return getAcquisitionsUnits("protectRead==false", 0, Integer.MAX_VALUE, lang, context, headers)
       .compose(units -> {
         List<String> ids = units.getAcquisitionsUnits()
@@ -126,8 +119,7 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
         if (logger.isDebugEnabled()) {
           logger.debug("getOpenForReadAcqUnitIds:: {} acq units with 'protectRead==false' are found: {}", ids.size(), StreamEx.of(ids).joining(", "));
         }
-        promise.complete(ids);
-        return promise.future();
+    return Future.succeededFuture(ids);
     });
   }
 }

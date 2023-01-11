@@ -13,11 +13,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.logging.log4j.LogManager;
@@ -25,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 import org.folio.HttpStatus;
 import org.folio.exception.HttpException;
 import org.folio.rest.acq.model.AcquisitionsUnit;
-import org.folio.rest.acq.model.AcquisitionsUnitMembershipCollection;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.service.BaseService;
@@ -62,7 +59,7 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
             }
           } else {
             logger.warn("checkOperationsRestrictions:: mismatch between unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
-            Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(unitIds, extractUnitIds(units))));
+            return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(unitIds, extractUnitIds(units))));
           }
           return Future.succeededFuture();
         });
@@ -85,13 +82,9 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
 
   private Future<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, String lang, Context context, Map<String, String> headers) {
     logger.debug("getUnitsByIds:: Trying to get units by unitIds: {}", unitIds);
-    Promise<List<AcquisitionsUnit>> promise = Promise.promise();
     String query = combineCqlExpressions("and", ALL_UNITS_CQL, convertIdsToCqlQuery(unitIds));
     return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
-      .compose(ids -> {
-        promise.complete(ids.getAcquisitionsUnits());
-      return promise.future();
-      });
+      .compose(ids -> Future.succeededFuture(ids.getAcquisitionsUnits()));
   }
 
   private boolean applyMergingStrategy(List<AcquisitionsUnit> units, Set<ProtectedOperationType> operations) {
@@ -101,21 +94,12 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   private Future<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, String lang, Context context, Map<String, String> headers) {
     logger.debug("verifyUserIsMemberOfOrganizationUnits:: Trying to verify user '{}' is member of organization units: {}", currentUserId, unitIdsAssignedToOrg);
     String query = String.format("userId==%s AND %s", currentUserId, convertIdsToCqlQuery(unitIdsAssignedToOrg, ACQUISITIONS_UNIT_ID, true));
-    Promise<AcquisitionsUnitMembershipCollection> acquisitionsUnitMembershipCollectionPromise = Promise.promise();
-    Promise<Void> promise = Promise.promise();
     return acquisitionsUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, lang, context, headers)
       .compose(unit -> {
         if (unit.getTotalRecords() == 0) {
-          promise.fail(new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS));
+          return Future.failedFuture(new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS));
         }
-        else {
-        promise.complete();
-        }
-        return promise.future();
-      })
-      .onFailure(t -> {
-        logger.error("Error while getting user's '{}' units memberships by unIdsAssignedToOrg '{}'", currentUserId, unitIdsAssignedToOrg, t);
-        acquisitionsUnitMembershipCollectionPromise.fail(new CompletionException(t));
+        return Future.succeededFuture();
       });
   }
 

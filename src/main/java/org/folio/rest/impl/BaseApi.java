@@ -10,6 +10,7 @@ import static org.folio.exception.ErrorCodes.GENERIC_ERROR_CODE;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletionException;
 
 import javax.ws.rs.core.Response;
@@ -76,8 +77,7 @@ public class BaseApi {
 
   protected int handleProcessingError(Throwable throwable) {
     Throwable cause = throwable.getCause();
-    if(cause == null)
-    {
+    if (Objects.isNull(cause)) {
       cause = throwable.initCause(new CompletionException(throwable));
     }
     logger.error("Exception encountered", cause);
