@@ -75,13 +75,10 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
   private Future<List<String>> getAcqUnitIdsForSearch(String lang, Context context, Map<String, String> headers) {
     return getAcqUnitIdsForUser(headers.get(OKAPI_USERID_HEADER), lang, context, headers)
       .compose(unitsForUser -> getOpenForReadAcqUnitIds(lang, context, headers)
-        .map(unitsAllowRead -> {
-        List<String> list =  StreamEx.of(unitsForUser, unitsAllowRead)
-          .flatCollection(strings -> strings)
-          .distinct()
-          .toList();
-        return list;
-      }));
+      .map(unitsAllowRead -> StreamEx.of(unitsForUser, unitsAllowRead)
+        .flatCollection(strings -> strings)
+        .distinct()
+        .toList()));
   }
 
   private Future<List<String>> getAcqUnitIdsForUser(String userId, String lang, Context context, Map<String, String> headers) {

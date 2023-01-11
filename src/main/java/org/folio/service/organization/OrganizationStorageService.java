@@ -54,8 +54,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
-    return handlePostRequest(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext, logger)
-      .compose(Future::succeededFuture);
+    return handlePostRequest(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext, logger);
   }
 
   private boolean isSameAccountNumbers(Organization organization) {
