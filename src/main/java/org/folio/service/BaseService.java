@@ -5,7 +5,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.folio.HttpStatus.HTTP_CREATED;
 import static org.folio.config.Constants.OKAPI_URL;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_MEMBERSHIPS;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_UNITS;
@@ -30,7 +29,6 @@ import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ErrorConverter;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.folio.exception.HttpException;
@@ -82,34 +80,22 @@ public abstract class BaseService {
    * @param recordData json to post
    * @return future holding id of newly created entity Record or an exception if process failed
    */
-  public Future<String> handlePostRequest(JsonObject recordData, String endpoint,
-      RequestContext requestContext, Logger logger) {
-    Promise<String> promise = Promise.promise();
+  public <T> Future<T> handlePostRequest(T recordData, String endpoint, Class<T> responseType,
+                                          RequestContext requestContext, Logger logger) {
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
-    try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Trying to create object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
+        logger.debug("Trying to create object by endpoint '{}' and body '{}'", endpoint, JsonObject.mapFrom(recordData).encodePrettily());
       }
       return getVertxWebClient(requestContext.getContext())
         .postAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint)).putHeaders(caseInsensitiveHeader)
         .expect(SUCCESS_RESPONSE_PREDICATE)
         .sendJson(recordData)
-        .compose(this::verifyAndExtractRecordId)
-        .compose(id -> {
-          promise.complete(id);
-          if (logger.isDebugEnabled()) {
-            logger.debug("Object was successfully created. Record with '{}' id has been created", id);
-          }
-          return promise.future();
-        })
-        .onFailure(t ->
-          promise.fail(new CompletionException(t))
-        );
-    } catch (Exception e) {
-      logger.error("Error creating object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
-      promise.fail(new CompletionException(e));
-    }
-    return promise.future();
+        .map(bufferHttpResponse -> {
+          var id = verifyAndExtractRecordId(bufferHttpResponse);
+          return bufferHttpResponse.bodyAsJsonObject()
+            .put(ID, id)
+            .mapTo(responseType);
+        });
   }
 
   /**
@@ -216,26 +202,16 @@ public abstract class BaseService {
     return promise.future();
   }
 
-  private JsonObject verifyAndExtractBody(HttpResponse<Buffer> response) {
-    if (ObjectUtils.notEqual(response.statusCode(),HTTP_CREATED.toInt())) {
-      throw new HttpException(response.statusCode(), response.body().toString());
-    }
-    return response.bodyAsJsonObject();
-  }
-
-  private Future<String> verifyAndExtractRecordId(HttpResponse<Buffer> response) {
-    Promise<String> promise = Promise.promise();
-    JsonObject body = verifyAndExtractBody(response);
+  private String verifyAndExtractRecordId(HttpResponse<Buffer> response) {
+    JsonObject body = response.bodyAsJsonObject();
     String id;
     if (body != null && !body.isEmpty() && body.containsKey(ID)) {
       id = body.getString(ID);
     } else {
-      String location = response.headers()
-        .get(LOCATION);
+      String location = response.getHeader(LOCATION);
       id = location.substring(location.lastIndexOf('/') + 1);
     }
-    promise.complete(id);
-    return promise.future();
+    return id;
   }
 
   public static String combineCqlExpressions(String operator, String... expressions) {

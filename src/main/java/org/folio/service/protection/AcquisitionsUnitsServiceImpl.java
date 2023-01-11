@@ -32,7 +32,6 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
   public Future<AcquisitionsUnitCollection> getAcquisitionsUnits(String query, int offset, int limit, String lang, Context context, Map<String, String> headers) {
     logger.debug("getAcquisitionsUnits:: Trying to get acquisition units with query: {}, offset: {}, limit: {}", query, offset, limit);
     RequestContext requestContext = new RequestContext(context, headers);
-    Promise<AcquisitionsUnitCollection> promise = Promise.promise();
     if (StringUtils.isEmpty(query)) {
       query = ACTIVE_UNITS_CQL;
     } else if (!query.contains(IS_DELETED_PROP)) {
@@ -40,17 +39,7 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
     }
     String endpoint = String.format(GET_UNITS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
     return handleGetRequest(endpoint, requestContext, logger)
-      .compose(jsonUnits -> {
-        AcquisitionsUnitCollection acquisitionsUnitCollection = jsonUnits.mapTo(AcquisitionsUnitCollection.class);
-        promise.complete(acquisitionsUnitCollection);
-        return promise.future();
-       })
-      .onFailure(t -> {
-        if (Objects.nonNull(t)) {
-          logger.warn("getAcquisitionsUnits:: Error getting acquisition units by endpoint: {}", endpoint, t);
-          promise.fail(new CompletionException(t));
-        }
-      });
+      .compose(jsonUnits -> Future.succeededFuture(jsonUnits.mapTo(AcquisitionsUnitCollection.class)));
   }
 
   @Override

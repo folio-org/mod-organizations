@@ -55,19 +55,14 @@ public class OrganizationStorageService extends BaseService implements Organizat
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
-    handlePostRequest(JsonObject.mapFrom(organization), resourcesPath(ORGANIZATIONS), requestContext, logger)
-      .onSuccess(id -> {
-        JsonObject.mapFrom(organization.withId(id))
-          .mapTo(Organization.class);
-          promise.complete(organization);
-        })
+    return handlePostRequest(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext, logger)
+      .compose(org -> Future.succeededFuture(org))
         .onFailure(t -> {
           if (Objects.nonNull(t)) {
             logger.warn("Error creating organization with name: {}", organization.getName(), t);
             promise.fail(new CompletionException(t));
           }
         });
-    return promise.future();
   }
 
   private boolean isSameAccountNumbers(Organization organization) {
@@ -137,9 +132,6 @@ public class OrganizationStorageService extends BaseService implements Organizat
   public Future<Void> updateOrganizationById(String id, Organization updatedOrganization, String lang, Context context,
       Map<String, String> headers) {
     logger.debug("updateOrganization:: Trying to update organization with id: {}", id);
-
-    Promise<Void> promise = Promise.promise();
-    Promise<Organization> organizationPromise = Promise.promise();
     RequestContext requestContext = new RequestContext(context, headers);
 
     if (isEmpty(updatedOrganization.getId())) {
@@ -154,48 +146,17 @@ public class OrganizationStorageService extends BaseService implements Organizat
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
-    handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
-      .compose(existingOrganizationJson -> {
-        Organization organization = existingOrganizationJson.mapTo(Organization.class);
-        organizationPromise.complete(organization);
-        return organizationPromise.future();
-      })
+    return handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
+      .compose(existingOrganizationJson -> Future.succeededFuture(existingOrganizationJson.mapTo(Organization.class)))
       .compose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, lang, context, headers)
-      .compose(ok -> handlePutRequest(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), logger, requestContext))
-        .compose(ok -> {
-          promise.complete();
-        return promise.future();
-        })
-        .onFailure(t -> {
-        if (Objects.nonNull(t)) {
-          logger.warn("Error updating organization with id: {}", id, t);
-          promise.fail(new CompletionException(t));
-        }
-        })).onFailure(t -> {
-        if (Objects.nonNull(t)) {
-          logger.warn("Error updating organization with id: {}", id, t);
-          promise.fail(new CompletionException(t));
-        }
-      });
-    return promise.future();
+      .compose(ok -> handlePutRequest(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), logger, requestContext)));
   }
 
   @Override
   public Future<Void> deleteOrganizationById(String id, Context context, Map<String, String> headers) {
     logger.debug("deleteOrganizationById:: Trying to delete organization by id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
-    Promise<Void> promise = Promise.promise();
-    return handleDeleteRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
-      .compose(t -> {
-        promise.complete();
-      return promise.future();
-      })
-      .onFailure(t -> {
-      if (Objects.nonNull(t)) {
-        logger.warn("Error deleting organization with id: {}", id, t);
-        promise.fail(new CompletionException(t));
-      }
-    });
+    return handleDeleteRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger);
   }
 
   @Autowired
