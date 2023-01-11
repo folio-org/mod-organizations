@@ -49,7 +49,6 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   @Override
   public Future<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
     logger.debug("checkOperationsRestrictions:: Trying to check operation restrictions by unitIds: {} and '{}' operations", unitIds, operations.size());
-    Promise<Void> promise = Promise.promise();
     if (CollectionUtils.isNotEmpty(unitIds)) {
       return getUnitsByIds(unitIds, lang, context, headers)
         .compose(units -> {
@@ -63,15 +62,13 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
             }
           } else {
             logger.warn("checkOperationsRestrictions:: mismatch between unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
-            throw new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(unitIds, extractUnitIds(units)));
+            Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(unitIds, extractUnitIds(units))));
           }
-          promise.complete();
-          return promise.future();
+          return Future.succeededFuture();
         });
     } else {
       logger.warn("checkOperationsRestrictions:: unitIds is empty");
-      promise.complete();
-      return promise.future();
+      return Future.succeededFuture();
     }
   }
 
@@ -104,22 +101,22 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
   private Future<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, String lang, Context context, Map<String, String> headers) {
     logger.debug("verifyUserIsMemberOfOrganizationUnits:: Trying to verify user '{}' is member of organization units: {}", currentUserId, unitIdsAssignedToOrg);
     String query = String.format("userId==%s AND %s", currentUserId, convertIdsToCqlQuery(unitIdsAssignedToOrg, ACQUISITIONS_UNIT_ID, true));
-    Promise<AcquisitionsUnitMembershipCollection> promise = Promise.promise();
-    Promise<Void> promise1 = Promise.promise();
+    Promise<AcquisitionsUnitMembershipCollection> acquisitionsUnitMembershipCollectionPromise = Promise.promise();
+    Promise<Void> promise = Promise.promise();
     return acquisitionsUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, lang, context, headers)
       .compose(unit -> {
         if (unit.getTotalRecords() == 0) {
-          promise1.fail(new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS));
+          promise.fail(new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS));
         }
         else {
-        promise1.complete();}
-        return promise1.future();
+        promise.complete();
+        }
+        return promise.future();
       })
       .onFailure(t -> {
         logger.error("Error while getting user's '{}' units memberships by unIdsAssignedToOrg '{}'", currentUserId, unitIdsAssignedToOrg, t);
-        promise.fail(new CompletionException(t));
+        acquisitionsUnitMembershipCollectionPromise.fail(new CompletionException(t));
       });
-
   }
 
   private List<String> extractUnitIds(List<AcquisitionsUnit> activeUnits) {
@@ -170,10 +167,8 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
    */
   public Future<Void> verifyIfUnitsAreActive(List<String> acqUnitIds, String lang, Context context, Map<String, String> headers) {
     logger.debug("verifyIfUnitsAreActive:: Trying to verify if units are active by acqUnitsIds: {}", acqUnitIds);
-    Promise<Void> promise = Promise.promise();
     if (acqUnitIds.isEmpty()) {
-      promise.complete();
-      return promise.future();
+      return Future.succeededFuture();
     }
     return getUnitsByIds(acqUnitIds, lang, context, headers).compose(units -> {
       List<String> activeUnitIds = units.stream()
@@ -182,12 +177,9 @@ public class ProtectionServiceImpl extends BaseService implements ProtectionServ
         .collect(Collectors.toList());
 
       if (acqUnitIds.size() != activeUnitIds.size()) {
-        promise.fail(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(acqUnitIds, activeUnitIds)));
+        return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(acqUnitIds, activeUnitIds)));
       }
-      promise.complete();
-      return promise.future();
-    }).onFailure(t ->
-      promise.fail(new CompletionException(t))
-    );
+      return Future.succeededFuture();
+    });
   }
 }

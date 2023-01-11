@@ -52,9 +52,8 @@ public class OrganizationStorageService extends BaseService implements Organizat
 
     if (isSameAccountNumbers(organization)) {
       logger.warn("crateOrganization:: Account number of organization '{}' is not unique", organization.getName());
-      promise.fail(new CompletionException(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
-        ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError())));
-      return promise.future();
+      return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
+        ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
     handlePostRequest(JsonObject.mapFrom(organization), resourcesPath(ORGANIZATIONS), requestContext, logger)
       .onSuccess(id -> {
@@ -147,15 +146,13 @@ public class OrganizationStorageService extends BaseService implements Organizat
       updatedOrganization.setId(id);
     } else if (!id.equals(updatedOrganization.getId())) {
       logger.warn("updateOrganization:: Mismatch between id '{}' in path and request body '{}'", id, updatedOrganization.getId());
-      promise.fail(new CompletionException(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
-        MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError())));
-      return promise.future();
+      return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
+        MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
     }
     if (isSameAccountNumbers(updatedOrganization)) {
       logger.warn("updateOrganization:: Account number of organization '{}' is not unique", id);
-      promise.fail(new CompletionException(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
-        ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError())));
-      return promise.future();
+      return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
+        ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
     handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
       .compose(existingOrganizationJson -> {
