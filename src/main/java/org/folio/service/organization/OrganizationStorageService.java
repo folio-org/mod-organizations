@@ -56,7 +56,7 @@ public class OrganizationStorageService extends BaseService implements Organizat
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
     return handlePostRequest(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext, logger)
-      .compose(org -> Future.succeededFuture(org))
+      .compose(Future::succeededFuture)
         .onFailure(t -> {
           if (Objects.nonNull(t)) {
             logger.warn("Error creating organization with name: {}", organization.getName(), t);

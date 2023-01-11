@@ -63,7 +63,6 @@ public class AcquisitionsUnitsServiceImpl extends BaseService implements Acquisi
 
   @Override
   public Future<String> buildAcqUnitsCqlClause(String query, int offset, int limit, String lang, Context context, Map<String, String> headers) {
-    Promise<String> promise = Promise.promise();
     return getAcqUnitIdsForSearch(lang, context, headers)
       .compose(ids -> {
         if (ids.isEmpty()) {
