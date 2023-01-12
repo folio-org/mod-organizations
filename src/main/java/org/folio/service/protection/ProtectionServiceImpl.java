@@ -5,13 +5,13 @@ import static org.folio.exception.ErrorCodes.ORGANIZATION_UNITS_NOT_FOUND;
 import static org.folio.exception.ErrorCodes.USER_HAS_NO_ACQ_PERMISSIONS;
 import static org.folio.exception.ErrorCodes.USER_HAS_NO_PERMISSIONS;
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
-import static org.folio.rest.client.RestClient.ACQUISITIONS_UNIT_ID;
-import static org.folio.rest.client.RestClient.ACQUISITIONS_UNIT_IDS;
-import static org.folio.rest.client.RestClient.ALL_UNITS_CQL;
-import static org.folio.rest.client.RestClient.combineCqlExpressions;
-import static org.folio.rest.client.RestClient.convertIdsToCqlQuery;
 import static org.folio.service.protection.AcqDesiredPermissions.MANAGE;
 import static org.folio.service.protection.ProtectedOperationType.UPDATE;
+import static org.folio.util.RestUtils.ACQUISITIONS_UNIT_ID;
+import static org.folio.util.RestUtils.ACQUISITIONS_UNIT_IDS;
+import static org.folio.util.RestUtils.ALL_UNITS_CQL;
+import static org.folio.util.RestUtils.combineCqlExpressions;
+import static org.folio.util.RestUtils.convertIdsToCqlQuery;
 
 import java.util.Collections;
 import java.util.HashSet;

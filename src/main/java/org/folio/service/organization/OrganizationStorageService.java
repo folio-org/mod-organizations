@@ -3,13 +3,13 @@ package org.folio.service.organization;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.folio.exception.ErrorCodes.ACCOUNT_NUMBER_MUST_BE_UNIQUE;
 import static org.folio.exception.ErrorCodes.MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY;
-import static org.folio.rest.client.RestClient.SEARCH_PARAMS;
-import static org.folio.rest.client.RestClient.buildQuery;
-import static org.folio.rest.client.RestClient.combineCqlExpressions;
 import static org.folio.service.protection.ProtectedOperationType.READ;
 import static org.folio.util.ResourcePathResolver.ORGANIZATIONS;
 import static org.folio.util.ResourcePathResolver.resourceByIdPath;
 import static org.folio.util.ResourcePathResolver.resourcesPath;
+import static org.folio.util.RestUtils.SEARCH_PARAMS;
+import static org.folio.util.RestUtils.buildQuery;
+import static org.folio.util.RestUtils.combineCqlExpressions;
 
 import java.util.Collections;
 import java.util.Map;

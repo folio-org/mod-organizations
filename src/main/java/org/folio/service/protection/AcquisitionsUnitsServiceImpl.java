@@ -1,15 +1,15 @@
 package org.folio.service.protection;
 
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
-import static org.folio.rest.client.RestClient.ACQUISITIONS_UNIT_IDS;
-import static org.folio.rest.client.RestClient.ACTIVE_UNITS_CQL;
-import static org.folio.rest.client.RestClient.GET_UNITS_BY_QUERY;
-import static org.folio.rest.client.RestClient.GET_UNITS_MEMBERSHIPS_BY_QUERY;
-import static org.folio.rest.client.RestClient.IS_DELETED_PROP;
-import static org.folio.rest.client.RestClient.NO_ACQ_UNIT_ASSIGNED_CQL;
-import static org.folio.rest.client.RestClient.buildQuery;
-import static org.folio.rest.client.RestClient.combineCqlExpressions;
-import static org.folio.rest.client.RestClient.convertIdsToCqlQuery;
+import static org.folio.util.RestUtils.ACQUISITIONS_UNIT_IDS;
+import static org.folio.util.RestUtils.ACTIVE_UNITS_CQL;
+import static org.folio.util.RestUtils.GET_UNITS_BY_QUERY;
+import static org.folio.util.RestUtils.GET_UNITS_MEMBERSHIPS_BY_QUERY;
+import static org.folio.util.RestUtils.IS_DELETED_PROP;
+import static org.folio.util.RestUtils.NO_ACQ_UNIT_ASSIGNED_CQL;
+import static org.folio.util.RestUtils.buildQuery;
+import static org.folio.util.RestUtils.combineCqlExpressions;
+import static org.folio.util.RestUtils.convertIdsToCqlQuery;
 
 import java.util.List;
 import java.util.Map;
