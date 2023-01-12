@@ -25,7 +25,7 @@ import org.folio.exception.HttpException;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Organization;
-import org.folio.service.BaseService;
+import org.folio.service.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +33,7 @@ import io.vertx.core.Context;
 import io.vertx.core.json.JsonArray;
 
 @Service
-public class ProtectionServiceImpl extends BaseService implements ProtectionService {
+public class ProtectionServiceImpl extends RestClient implements ProtectionService {
   protected final Logger logger = LogManager.getLogger(this.getClass());
   private AcquisitionsUnitsService acquisitionsUnitsService;
   public static final String OKAPI_HEADER_PERMISSIONS = "X-Okapi-Permissions";

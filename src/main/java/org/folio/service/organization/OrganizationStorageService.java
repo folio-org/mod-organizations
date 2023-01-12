@@ -26,7 +26,7 @@ import org.folio.rest.client.RequestContext;
 import org.folio.rest.jaxrs.model.Account;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
-import org.folio.service.BaseService;
+import org.folio.service.RestClient;
 import org.folio.service.protection.AcquisitionsUnitsService;
 import org.folio.service.protection.ProtectionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ import io.vertx.core.Context;
 import io.vertx.core.json.JsonObject;
 
 @Service
-public class OrganizationStorageService extends BaseService implements OrganizationService {
+public class OrganizationStorageService extends RestClient implements OrganizationService {
 
   private static final Logger logger = LogManager.getLogger(OrganizationStorageService.class);
   public static final String GET_ORGANIZATIONS_BY_QUERY = resourcesPath(ORGANIZATIONS) + SEARCH_PARAMS;

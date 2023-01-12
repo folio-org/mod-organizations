@@ -18,14 +18,14 @@ import org.folio.rest.acq.model.AcquisitionsUnitCollection;
 import org.folio.rest.acq.model.AcquisitionsUnitMembership;
 import org.folio.rest.acq.model.AcquisitionsUnitMembershipCollection;
 import org.folio.rest.client.RequestContext;
-import org.folio.service.BaseService;
+import org.folio.service.RestClient;
 import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;
 import one.util.streamex.StreamEx;
 
 @Service
-public class AcquisitionsUnitsServiceImpl extends BaseService implements AcquisitionsUnitsService {
+public class AcquisitionsUnitsServiceImpl extends RestClient implements AcquisitionsUnitsService {
   protected final Logger logger = LogManager.getLogger(this.getClass());
 
   @Override

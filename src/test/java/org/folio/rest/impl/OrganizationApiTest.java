@@ -17,7 +17,7 @@ import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_NO_ACQ;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_READ_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_UPDATE_PROTECTED;
-import static org.folio.service.BaseService.SEARCH_PARAMS;
+import static org.folio.service.RestClient.SEARCH_PARAMS;
 import static wiremock.org.hamcrest.MatcherAssert.assertThat;
 import static wiremock.org.hamcrest.Matchers.equalTo;
 import static wiremock.org.hamcrest.Matchers.hasSize;

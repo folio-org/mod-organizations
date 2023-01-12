@@ -39,7 +39,7 @@ import io.vertx.core.Context;
 import io.vertx.core.json.JsonObject;
 import one.util.streamex.StreamEx;
 
-public abstract class BaseService {
+public abstract class RestClient {
   public static final String SEARCH_PARAMS = "?limit=%s&offset=%s%s&lang=%s";
   private static final String ID = "id";
   public static final String ACQUISITIONS_UNIT_ID = "acquisitionsUnitId";
