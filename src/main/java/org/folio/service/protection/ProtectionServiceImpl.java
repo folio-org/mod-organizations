@@ -5,6 +5,11 @@ import static org.folio.exception.ErrorCodes.ORGANIZATION_UNITS_NOT_FOUND;
 import static org.folio.exception.ErrorCodes.USER_HAS_NO_ACQ_PERMISSIONS;
 import static org.folio.exception.ErrorCodes.USER_HAS_NO_PERMISSIONS;
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
+import static org.folio.rest.client.RestClient.ACQUISITIONS_UNIT_ID;
+import static org.folio.rest.client.RestClient.ACQUISITIONS_UNIT_IDS;
+import static org.folio.rest.client.RestClient.ALL_UNITS_CQL;
+import static org.folio.rest.client.RestClient.combineCqlExpressions;
+import static org.folio.rest.client.RestClient.convertIdsToCqlQuery;
 import static org.folio.service.protection.AcqDesiredPermissions.MANAGE;
 import static org.folio.service.protection.ProtectedOperationType.UPDATE;
 
@@ -23,9 +28,9 @@ import org.apache.logging.log4j.Logger;
 import org.folio.HttpStatus;
 import org.folio.exception.HttpException;
 import org.folio.rest.acq.model.AcquisitionsUnit;
+import org.folio.rest.acq.model.AcquisitionsUnitCollection;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Organization;
-import org.folio.rest.client.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,10 +38,12 @@ import io.vertx.core.Context;
 import io.vertx.core.json.JsonArray;
 
 @Service
-public class ProtectionServiceImpl extends RestClient implements ProtectionService {
+public class ProtectionServiceImpl implements ProtectionService {
   protected final Logger logger = LogManager.getLogger(this.getClass());
-  private AcquisitionsUnitsService acquisitionsUnitsService;
+
   public static final String OKAPI_HEADER_PERMISSIONS = "X-Okapi-Permissions";
+
+  private AcquisitionsUnitsService acquisitionsUnitsService;
 
   @Autowired
   public void setAcquisitionsUnitsService(AcquisitionsUnitsService acquisitionsUnitsService) {
@@ -84,7 +91,7 @@ public class ProtectionServiceImpl extends RestClient implements ProtectionServi
     logger.debug("getUnitsByIds:: Trying to get units by unitIds: {}", unitIds);
     String query = combineCqlExpressions("and", ALL_UNITS_CQL, convertIdsToCqlQuery(unitIds));
     return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
-      .map(ids -> (ids.getAcquisitionsUnits()));
+      .map(AcquisitionsUnitCollection::getAcquisitionsUnits);
   }
 
   private boolean applyMergingStrategy(List<AcquisitionsUnit> units, Set<ProtectedOperationType> operations) {

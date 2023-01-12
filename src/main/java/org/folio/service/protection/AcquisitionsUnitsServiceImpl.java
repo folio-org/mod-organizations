@@ -1,6 +1,15 @@
 package org.folio.service.protection;
 
 import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
+import static org.folio.rest.client.RestClient.ACQUISITIONS_UNIT_IDS;
+import static org.folio.rest.client.RestClient.ACTIVE_UNITS_CQL;
+import static org.folio.rest.client.RestClient.GET_UNITS_BY_QUERY;
+import static org.folio.rest.client.RestClient.GET_UNITS_MEMBERSHIPS_BY_QUERY;
+import static org.folio.rest.client.RestClient.IS_DELETED_PROP;
+import static org.folio.rest.client.RestClient.NO_ACQ_UNIT_ASSIGNED_CQL;
+import static org.folio.rest.client.RestClient.buildQuery;
+import static org.folio.rest.client.RestClient.combineCqlExpressions;
+import static org.folio.rest.client.RestClient.convertIdsToCqlQuery;
 
 import java.util.List;
 import java.util.Map;
@@ -19,14 +28,17 @@ import org.folio.rest.acq.model.AcquisitionsUnitMembership;
 import org.folio.rest.acq.model.AcquisitionsUnitMembershipCollection;
 import org.folio.rest.client.RequestContext;
 import org.folio.rest.client.RestClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;
 import one.util.streamex.StreamEx;
 
 @Service
-public class AcquisitionsUnitsServiceImpl extends RestClient implements AcquisitionsUnitsService {
+public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
   protected final Logger logger = LogManager.getLogger(this.getClass());
+
+  private RestClient restClient;
 
   @Override
   public Future<AcquisitionsUnitCollection> getAcquisitionsUnits(String query, int offset, int limit, String lang, Context context, Map<String, String> headers) {
@@ -38,7 +50,7 @@ public class AcquisitionsUnitsServiceImpl extends RestClient implements Acquisit
       query = combineCqlExpressions("and", ACTIVE_UNITS_CQL, query);
     }
     String endpoint = String.format(GET_UNITS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
-    return handleGetRequest(endpoint, requestContext, logger)
+    return restClient.get(endpoint, requestContext, logger)
       .map(jsonUnits -> jsonUnits.mapTo(AcquisitionsUnitCollection.class));
   }
 
@@ -48,7 +60,7 @@ public class AcquisitionsUnitsServiceImpl extends RestClient implements Acquisit
     RequestContext requestContext = new RequestContext(context, headers);
     Promise<AcquisitionsUnitMembershipCollection> promise = Promise.promise();
     String endpoint = String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
-    return handleGetRequest(endpoint, requestContext, logger)
+    return restClient.get(endpoint, requestContext, logger)
       .compose(jsonUnitsMembership -> {
         promise.complete(jsonUnitsMembership.mapTo(AcquisitionsUnitMembershipCollection.class));
         return promise.future();
@@ -107,5 +119,10 @@ public class AcquisitionsUnitsServiceImpl extends RestClient implements Acquisit
         }
         return ids;
       });
+  }
+
+  @Autowired
+  public void setRestClient(RestClient restClient) {
+    this.restClient = restClient;
   }
 }

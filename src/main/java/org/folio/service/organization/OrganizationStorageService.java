@@ -3,6 +3,9 @@ package org.folio.service.organization;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.folio.exception.ErrorCodes.ACCOUNT_NUMBER_MUST_BE_UNIQUE;
 import static org.folio.exception.ErrorCodes.MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY;
+import static org.folio.rest.client.RestClient.SEARCH_PARAMS;
+import static org.folio.rest.client.RestClient.buildQuery;
+import static org.folio.rest.client.RestClient.combineCqlExpressions;
 import static org.folio.service.protection.ProtectedOperationType.READ;
 import static org.folio.util.ResourcePathResolver.ORGANIZATIONS;
 import static org.folio.util.ResourcePathResolver.resourceByIdPath;
@@ -36,12 +39,14 @@ import io.vertx.core.Context;
 import io.vertx.core.json.JsonObject;
 
 @Service
-public class OrganizationStorageService extends RestClient implements OrganizationService {
+public class OrganizationStorageService implements OrganizationService {
 
   private static final Logger logger = LogManager.getLogger(OrganizationStorageService.class);
   public static final String GET_ORGANIZATIONS_BY_QUERY = resourcesPath(ORGANIZATIONS) + SEARCH_PARAMS;
 
   private ProtectionService protectionService;
+
+  private RestClient restClient;
   private AcquisitionsUnitsService acquisitionsUnitsService;
 
   @Override
@@ -54,7 +59,7 @@ public class OrganizationStorageService extends RestClient implements Organizati
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
-    return handlePostRequest(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext, logger);
+    return restClient.post(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext, logger);
   }
 
   private boolean isSameAccountNumbers(Organization organization) {
@@ -70,7 +75,7 @@ public class OrganizationStorageService extends RestClient implements Organizati
     logger.debug("getOrganizationById:: Trying to get organization by id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
     Promise<Organization> promise = Promise.promise();
-    handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
+    restClient.get(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
       .compose(json -> Future.succeededFuture(json.mapTo(Organization.class)))
       .compose(organization ->
          protectionService.checkOperationsRestrictions(organization.getAcqUnitIds(), Collections.singleton(READ), lang, context, headers)
@@ -104,7 +109,7 @@ public class OrganizationStorageService extends RestClient implements Organizati
         String endpoint = StringUtils.isEmpty(query) ?
           String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(clause, logger), lang) :
           String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(combineCqlExpressions("and", clause, query), logger), lang);
-        return handleGetRequest(endpoint, requestContext, logger);
+        return restClient.get(endpoint, requestContext, logger);
       })
       .compose(json -> {
         OrganizationCollection organizationCollection = json.mapTo(OrganizationCollection.class);
@@ -138,22 +143,27 @@ public class OrganizationStorageService extends RestClient implements Organizati
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
-    return handleGetRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
+    return restClient.get(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
       .compose(existingOrganizationJson -> Future.succeededFuture(existingOrganizationJson.mapTo(Organization.class)))
       .compose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, lang, context, headers)
-      .compose(ok -> handlePutRequest(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), logger, requestContext)));
+      .compose(ok -> restClient.put(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), logger, requestContext)));
   }
 
   @Override
   public Future<Void> deleteOrganizationById(String id, Context context, Map<String, String> headers) {
     logger.debug("deleteOrganizationById:: Trying to delete organization by id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
-    return handleDeleteRequest(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger);
+    return restClient.delete(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger);
   }
 
   @Autowired
   public void setProtectionService(ProtectionService protectionService) {
     this.protectionService = protectionService;
+  }
+
+  @Autowired
+  public void setRestClient(RestClient restClient) {
+    this.restClient = restClient;
   }
 
   @Autowired

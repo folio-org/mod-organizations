@@ -38,7 +38,7 @@ import io.vertx.core.Context;
 import io.vertx.core.json.JsonObject;
 import one.util.streamex.StreamEx;
 
-public abstract class RestClient {
+public class RestClient {
   public static final String SEARCH_PARAMS = "?limit=%s&offset=%s%s&lang=%s";
   private static final String ID = "id";
   public static final String ACQUISITIONS_UNIT_ID = "acquisitionsUnitId";
@@ -78,8 +78,8 @@ public abstract class RestClient {
    * @param recordData json to post
    * @return future holding id of newly created entity Record or an exception if process failed
    */
-  public <T> Future<T> handlePostRequest(T recordData, String endpoint, Class<T> responseType,
-                                          RequestContext requestContext, Logger logger) {
+  public <T> Future<T> post(T recordData, String endpoint, Class<T> responseType,
+                            RequestContext requestContext, Logger logger) {
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
       if (logger.isDebugEnabled()) {
         logger.debug("Trying to create object by endpoint '{}' and body '{}'", endpoint, JsonObject.mapFrom(recordData).encodePrettily());
@@ -101,7 +101,7 @@ public abstract class RestClient {
    *
    * @return future jsonObject of created entity Record or an exception if failed
    */
-  public Future<JsonObject> handleGetRequest(String endpoint, RequestContext requestContext, Logger logger) {
+  public Future<JsonObject> get(String endpoint, RequestContext requestContext, Logger logger) {
     Promise<JsonObject> promise = Promise.promise();
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
     try {
@@ -137,7 +137,7 @@ public abstract class RestClient {
    * @param recordData json to use for update operation
    * @param endpoint   endpoint
    */
-  public Future<Void> handlePutRequest(String endpoint, JsonObject recordData, Logger logger, RequestContext context) {
+  public Future<Void> put(String endpoint, JsonObject recordData, Logger logger, RequestContext context) {
     Promise<Void> promise = Promise.promise();
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(context.getHeaders());
     try {
@@ -172,7 +172,7 @@ public abstract class RestClient {
    *
    * @param endpoint endpoint
    */
-  public Future<Void> handleDeleteRequest(String endpoint, RequestContext requestContext, Logger logger) {
+  public Future<Void> delete(String endpoint, RequestContext requestContext, Logger logger) {
     Promise<Void> promise = Promise.promise();
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
     try {
