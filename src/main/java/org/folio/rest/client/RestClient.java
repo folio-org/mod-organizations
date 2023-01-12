@@ -8,6 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.folio.config.Constants.OKAPI_URL;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_MEMBERSHIPS;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_UNITS;
+import static org.folio.util.ResourcePathResolver.CQL_SORT_BY_PATTERN;
 import static org.folio.util.ResourcePathResolver.resourcesPath;
 
 import java.io.UnsupportedEncodingException;
@@ -17,7 +18,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -213,7 +213,6 @@ public abstract class RestClient {
   }
 
   public static String combineCqlExpressions(String operator, String... expressions) {
-    final Pattern CQL_SORT_BY_PATTERN = Pattern.compile("(.*)(\\ssortBy\\s.*)", Pattern.CASE_INSENSITIVE);
     if (ArrayUtils.isEmpty(expressions)) {
       return EMPTY;
     }
