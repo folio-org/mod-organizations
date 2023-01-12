@@ -26,7 +26,7 @@ import org.folio.rest.client.RequestContext;
 import org.folio.rest.jaxrs.model.Account;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
-import org.folio.service.RestClient;
+import org.folio.rest.client.RestClient;
 import org.folio.service.protection.AcquisitionsUnitsService;
 import org.folio.service.protection.ProtectionService;
 import org.springframework.beans.factory.annotation.Autowired;

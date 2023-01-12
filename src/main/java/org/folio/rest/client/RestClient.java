@@ -1,4 +1,4 @@
-package org.folio.service;
+package org.folio.rest.client;
 
 import static javax.ws.rs.core.HttpHeaders.LOCATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;

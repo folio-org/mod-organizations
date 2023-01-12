@@ -18,7 +18,7 @@ import org.folio.rest.acq.model.AcquisitionsUnitCollection;
 import org.folio.rest.acq.model.AcquisitionsUnitMembership;
 import org.folio.rest.acq.model.AcquisitionsUnitMembershipCollection;
 import org.folio.rest.client.RequestContext;
-import org.folio.service.RestClient;
+import org.folio.rest.client.RestClient;
 import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;

@@ -25,7 +25,7 @@ import org.folio.exception.HttpException;
 import org.folio.rest.acq.model.AcquisitionsUnit;
 import org.folio.rest.jaxrs.model.Error;
 import org.folio.rest.jaxrs.model.Organization;
-import org.folio.service.RestClient;
+import org.folio.rest.client.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
