@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.folio.exception.HttpException;
 import org.folio.okapi.common.WebClientFactory;
-import org.folio.rest.client.RequestContext;
 
 import io.vertx.core.Context;
 import io.vertx.core.json.JsonObject;
