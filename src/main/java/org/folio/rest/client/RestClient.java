@@ -56,7 +56,6 @@ public class RestClient {
   public Future<JsonObject> get(String endpoint, RequestContext requestContext, Logger logger) {
     Promise<JsonObject> promise = Promise.promise();
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
-    try {
       if(logger.isDebugEnabled()) {
         logger.debug("Trying to get object by endpoint '{}'", endpoint);
       }
@@ -76,11 +75,6 @@ public class RestClient {
           logger.error("Error getting object by endpoint '{}'", endpoint);
           promise.fail(new CompletionException(t));
         });
-    } catch (Exception e) {
-      logger.error("Error getting object by endpoint '{}'", endpoint);
-      promise.fail(new CompletionException(e));
-    }
-    return promise.future();
   }
 
   /**
@@ -92,7 +86,6 @@ public class RestClient {
   public Future<Void> put(String endpoint, JsonObject recordData, Logger logger, RequestContext context) {
     Promise<Void> promise = Promise.promise();
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(context.getHeaders());
-    try {
       if(logger.isDebugEnabled()) {
         logger.debug("Trying to update object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       }
@@ -112,11 +105,6 @@ public class RestClient {
           promise.fail(new CompletionException(t));
           logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), t);
         });
-    } catch (Exception e) {
-      logger.error("Error updating object by endpoint: {}, body: {}", endpoint, recordData.encodePrettily(), e);
-      promise.fail(new CompletionException(e));
-    }
-    return promise.future();
   }
 
   /**
@@ -127,7 +115,6 @@ public class RestClient {
   public Future<Void> delete(String endpoint, RequestContext requestContext, Logger logger) {
     Promise<Void> promise = Promise.promise();
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
-    try {
       if(logger.isDebugEnabled()) {
         logger.debug("Trying to delete object with endpoint: {}", endpoint);
       }
@@ -145,10 +132,6 @@ public class RestClient {
           promise.fail(new CompletionException(t));
 
         });
-    } catch (Exception e) {
-      logger.error("Error deleting object by endpoint '{}'", endpoint, e);
-      promise.fail(new CompletionException(e));
-    }
     return promise.future();
   }
 
