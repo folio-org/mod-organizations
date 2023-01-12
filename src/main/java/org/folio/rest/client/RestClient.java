@@ -8,7 +8,6 @@ import static org.folio.util.RestUtils.ID;
 import static org.folio.util.RestUtils.SUCCESS_RESPONSE_PREDICATE;
 
 import java.util.Map;
-import java.util.concurrent.CompletionException;
 
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -59,22 +58,22 @@ public class RestClient {
       if(logger.isDebugEnabled()) {
         logger.debug("Trying to get object by endpoint '{}'", endpoint);
       }
-      return getVertxWebClient(requestContext.getContext()).getAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
+      getVertxWebClient(requestContext.getContext()).getAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
         .putHeaders(caseInsensitiveHeader)
         .expect(SUCCESS_RESPONSE_PREDICATE)
         .send()
         .map(HttpResponse::bodyAsJsonObject)
-        .compose(jsonObject -> {
+        .onSuccess(jsonObject -> {
           if (logger.isDebugEnabled()) {
             logger.debug("Successfully retrieved: {}", jsonObject.encodePrettily());
           }
           promise.complete(jsonObject);
-          return promise.future();
         })
         .onFailure(t -> {
           logger.error("Error getting object by endpoint '{}'", endpoint);
-          promise.fail(new CompletionException(t));
+          promise.fail(t);
         });
+    return promise.future();
   }
 
   /**
@@ -89,22 +88,22 @@ public class RestClient {
       if(logger.isDebugEnabled()) {
         logger.debug("Trying to update object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       }
-      return getVertxWebClient(context.getContext())
+      getVertxWebClient(context.getContext())
         .putAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
         .putHeaders(caseInsensitiveHeader)
         .expect(SUCCESS_RESPONSE_PREDICATE)
         .sendJson(recordData)
-        .compose(response -> {
+        .onSuccess(response -> {
           if(logger.isDebugEnabled()) {
             logger.debug("Object was successfully updated. Record with '{}' id has been updated", endpoint);
           }
           promise.complete();
-          return promise.future();
         })
         .onFailure(t -> {
-          promise.fail(new CompletionException(t));
+          promise.fail(t);
           logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), t);
         });
+    return promise.future();
   }
 
   /**
@@ -129,8 +128,7 @@ public class RestClient {
         })
         .onFailure(t -> {
           logger.error("Object cannot be deleted with using endpoint: {}", endpoint, t);
-          promise.fail(new CompletionException(t));
-
+          promise.fail(t);
         });
     return promise.future();
   }

@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Future;
@@ -85,13 +84,13 @@ public class OrganizationStorageService implements OrganizationService {
       .onFailure(t -> {
         if (Objects.nonNull(t)) {
           logger.warn("Error loading organization with id: {}", organization.getId(), t);
-            promise.fail(new CompletionException(t));
+            promise.fail(t);
           }
         }))
       .onFailure(t -> {
         if (Objects.nonNull(t)) {
           logger.debug("Error loading organization", t);
-          promise.fail(new CompletionException(t));
+          promise.fail(t);
         }
       });
 
@@ -119,7 +118,7 @@ public class OrganizationStorageService implements OrganizationService {
       .onFailure( t -> {
         if (Objects.nonNull(t)) {
           logger.warn("Error loading organization collection with query: {}, offset: {}, limit: {}", query, offset, limit, t);
-          promise.fail(new CompletionException(t));
+          promise.fail(t);
         }
       });
     return promise.future();

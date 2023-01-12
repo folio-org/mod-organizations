@@ -14,7 +14,6 @@ import static org.folio.util.RestUtils.convertIdsToCqlQuery;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Future;
@@ -68,7 +67,7 @@ public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
       .onFailure(t -> {
         if (Objects.nonNull(t)) {
           logger.warn("getAcquisitionsUnitsMemberships:: Error getting acquisition units memberships by endpoint: {}", endpoint, t);
-          promise.fail(new CompletionException(t));
+          promise.fail(t);
         }
       });
   }

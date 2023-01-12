@@ -11,7 +11,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletionException;
 
 import javax.ws.rs.core.Response;
 
@@ -78,7 +77,7 @@ public class BaseApi {
   protected int handleProcessingError(Throwable throwable) {
     Throwable cause = throwable.getCause();
     if (Objects.isNull(cause)) {
-      cause = throwable.initCause(new CompletionException(throwable));
+      cause = throwable.initCause(new Exception(throwable));
     }
     logger.error("Exception encountered", cause);
     final Error error;
