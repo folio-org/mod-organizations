@@ -10,7 +10,6 @@ import static org.folio.exception.ErrorCodes.GENERIC_ERROR_CODE;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Objects;
 
 import javax.ws.rs.core.Response;
 
@@ -75,10 +74,7 @@ public class BaseApi {
   }
 
   protected int handleProcessingError(Throwable throwable) {
-    Throwable cause = throwable.getCause();
-    if (Objects.isNull(cause)) {
-      cause = throwable.initCause(new Exception(throwable));
-    }
+    final Throwable cause = throwable.getCause() == null ? throwable : throwable.getCause();
     logger.error("Exception encountered", cause);
     final Error error;
     final int code;
