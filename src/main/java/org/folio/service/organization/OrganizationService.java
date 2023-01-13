@@ -2,11 +2,11 @@ package org.folio.service.organization;
 
 import java.util.Map;
 
-import io.vertx.core.Future;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 
 public interface OrganizationService {
 
