@@ -75,8 +75,8 @@ public class OrganizationStorageService implements OrganizationService {
     RequestContext requestContext = new RequestContext(context, headers);
     Promise<Organization> promise = Promise.promise();
     restClient.get(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
-      .compose(json -> Future.succeededFuture(json.mapTo(Organization.class)))
-      .compose(organization ->
+      .map(json -> json.mapTo(Organization.class))
+      .map(organization ->
          protectionService.checkOperationsRestrictions(organization.getAcqUnitIds(), Collections.singleton(READ), lang, context, headers)
       .onSuccess(ok ->
          promise.complete(organization)
@@ -93,7 +93,6 @@ public class OrganizationStorageService implements OrganizationService {
           promise.fail(t);
         }
       });
-
     return promise.future();
   }
 
