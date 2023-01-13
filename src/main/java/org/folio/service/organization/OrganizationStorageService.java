@@ -77,16 +77,17 @@ public class OrganizationStorageService implements OrganizationService {
     restClient.get(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
       .map(json -> json.mapTo(Organization.class))
       .map(organization ->
-         protectionService.checkOperationsRestrictions(organization.getAcqUnitIds(), Collections.singleton(READ), lang, context, headers)
-      .onSuccess(ok ->
-         promise.complete(organization)
-      )
-      .onFailure(t -> {
-        if (Objects.nonNull(t)) {
-          logger.warn("Error loading organization with id: {}", organization.getId(), t);
-          promise.fail(t);
+        protectionService.checkOperationsRestrictions(organization.getAcqUnitIds(), Collections.singleton(READ), lang, context, headers)
+        .onSuccess(ok ->
+          promise.complete(organization)
+        )
+        .onFailure(t -> {
+          if (Objects.nonNull(t)) {
+            logger.warn("Operation is restricted by acquisition units for organization id: {}", organization.getId(), t);
+            promise.fail(t);
           }
-        }))
+        })
+      )
       .onFailure(t -> {
         if (Objects.nonNull(t)) {
           logger.error("Error loading organization with id: {}", id, t);
