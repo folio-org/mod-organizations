@@ -143,7 +143,7 @@ public class OrganizationStorageService implements OrganizationService {
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
     return restClient.get(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
-      .compose(existingOrganizationJson -> Future.succeededFuture(existingOrganizationJson.mapTo(Organization.class)))
+      .map(existingOrganizationJson -> existingOrganizationJson.mapTo(Organization.class))
       .compose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, lang, context, headers)
       .compose(ok -> restClient.put(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), logger, requestContext)));
   }
