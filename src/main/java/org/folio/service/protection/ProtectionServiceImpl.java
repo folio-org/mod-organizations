@@ -51,10 +51,10 @@ public class ProtectionServiceImpl implements ProtectionService {
   }
 
   @Override
-  public Future<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, String lang, Context context, Map<String, String> headers) {
+  public Future<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, Context context, Map<String, String> headers) {
     logger.debug("checkOperationsRestrictions:: Trying to check operation restrictions by unitIds: {} and '{}' operations", unitIds, operations.size());
     if (CollectionUtils.isNotEmpty(unitIds)) {
-      return getUnitsByIds(unitIds, lang, context, headers)
+      return getUnitsByIds(unitIds, context, headers)
         .compose(units -> {
           if (unitIds.size() == units.size()) {
             logger.info("checkOperationsRestrictions:: equal unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
@@ -62,7 +62,7 @@ public class ProtectionServiceImpl implements ProtectionService {
               .filter(unit -> !unit.getIsDeleted())
               .collect(Collectors.toList());
             if (!activeUnits.isEmpty() && applyMergingStrategy(activeUnits, operations)) {
-              return verifyUserIsMemberOfOrganizationUnits(extractUnitIds(activeUnits), headers.get(OKAPI_USERID_HEADER), lang, context, headers);
+              return verifyUserIsMemberOfOrganizationUnits(extractUnitIds(activeUnits), headers.get(OKAPI_USERID_HEADER), context, headers);
             }
           } else {
             logger.warn("checkOperationsRestrictions:: mismatch between unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
@@ -77,20 +77,20 @@ public class ProtectionServiceImpl implements ProtectionService {
   }
 
   @Override
-  public Future<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, String lang, Context context, Map<String, String> headers) {
+  public Future<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, Context context, Map<String, String> headers) {
     logger.debug("validateAcqUnitsOnUpdate:: Trying to verify acquisition units for updating between updateOrg '{}' and currentOrg '{}'", updatedOrg, currentOrg);
     List<String> updatedAcqUnitIds = updatedOrg.getAcqUnitIds();
     List<String> currentAcqUnitIds = currentOrg.getAcqUnitIds();
 
     verifyUserHasManagePermission(updatedAcqUnitIds, currentAcqUnitIds, getProvidedPermissions(headers));
-    return verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), lang, context, headers)
-      .compose(ok -> checkOperationsRestrictions(currentAcqUnitIds, Collections.singleton(UPDATE), lang, context, headers));
+    return verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), context, headers)
+      .compose(ok -> checkOperationsRestrictions(currentAcqUnitIds, Collections.singleton(UPDATE), context, headers));
   }
 
-  private Future<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, String lang, Context context, Map<String, String> headers) {
+  private Future<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, Context context, Map<String, String> headers) {
     logger.debug("getUnitsByIds:: Trying to get units by unitIds: {}", unitIds);
     String query = combineCqlExpressions("and", ALL_UNITS_CQL, convertIdsToCqlQuery(unitIds));
-    return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, lang, context, headers)
+    return acquisitionsUnitsService.getAcquisitionsUnits(query, 0, Integer.MAX_VALUE, context, headers)
       .map(AcquisitionsUnitCollection::getAcquisitionsUnits);
   }
 
@@ -98,15 +98,15 @@ public class ProtectionServiceImpl implements ProtectionService {
     return units.stream().allMatch(unit -> operations.stream().anyMatch(operation -> operation.isProtected(unit)));
   }
 
-  private Future<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, String lang, Context context, Map<String, String> headers) {
+  private Future<Void> verifyUserIsMemberOfOrganizationUnits(List<String> unitIdsAssignedToOrg, String currentUserId, Context context, Map<String, String> headers) {
     logger.debug("verifyUserIsMemberOfOrganizationUnits:: Trying to verify user '{}' is member of organization units: {}", currentUserId, unitIdsAssignedToOrg);
     String query = String.format("userId==%s AND %s", currentUserId, convertIdsToCqlQuery(unitIdsAssignedToOrg, ACQUISITIONS_UNIT_ID, true));
-    return acquisitionsUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, lang, context, headers)
-      .compose(unit -> {
+    return acquisitionsUnitsService.getAcquisitionsUnitsMemberships(query, 0, Integer.MAX_VALUE, context, headers)
+      .map(unit -> {
         if (unit.getTotalRecords() == 0) {
-          return Future.failedFuture(new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS));
+          throw new HttpException(HttpStatus.HTTP_FORBIDDEN.toInt(), USER_HAS_NO_PERMISSIONS);
         }
-        return Future.succeededFuture();
+        return null;
       });
   }
 
@@ -156,21 +156,22 @@ public class ProtectionServiceImpl implements ProtectionService {
    * @param acqUnitIds list of unit IDs.
    * @return future completed successfully if all units exist and active or exceptionally otherwise
    */
-  public Future<Void> verifyIfUnitsAreActive(List<String> acqUnitIds, String lang, Context context, Map<String, String> headers) {
+  public Future<Void> verifyIfUnitsAreActive(List<String> acqUnitIds, Context context, Map<String, String> headers) {
     logger.debug("verifyIfUnitsAreActive:: Trying to verify if units are active by acqUnitsIds: {}", acqUnitIds);
     if (acqUnitIds.isEmpty()) {
       return Future.succeededFuture();
     }
-    return getUnitsByIds(acqUnitIds, lang, context, headers).compose(units -> {
-      List<String> activeUnitIds = units.stream()
-        .filter(unit -> !unit.getIsDeleted())
-        .map(AcquisitionsUnit::getId)
-        .collect(Collectors.toList());
+    return getUnitsByIds(acqUnitIds, context, headers)
+      .compose(units -> {
+        List<String> activeUnitIds = units.stream()
+          .filter(unit -> !unit.getIsDeleted())
+          .map(AcquisitionsUnit::getId)
+          .collect(Collectors.toList());
 
-      if (acqUnitIds.size() != activeUnitIds.size()) {
-        return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(acqUnitIds, activeUnitIds)));
-      }
-      return Future.succeededFuture();
-    });
+        if (acqUnitIds.size() != activeUnitIds.size()) {
+          return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), buildUnitsNotFoundError(acqUnitIds, activeUnitIds)));
+        }
+        return Future.succeededFuture();
+      });
   }
 }

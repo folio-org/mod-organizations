@@ -13,11 +13,8 @@ import static org.folio.util.RestUtils.convertIdsToCqlQuery;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import one.util.streamex.StreamEx;
 
 @Service
@@ -40,7 +38,7 @@ public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
   private RestClient restClient;
 
   @Override
-  public Future<AcquisitionsUnitCollection> getAcquisitionsUnits(String query, int offset, int limit, String lang, Context context, Map<String, String> headers) {
+  public Future<AcquisitionsUnitCollection> getAcquisitionsUnits(String query, int offset, int limit, Context context, Map<String, String> headers) {
     logger.debug("getAcquisitionsUnits:: Trying to get acquisition units with query: {}, offset: {}, limit: {}", query, offset, limit);
     RequestContext requestContext = new RequestContext(context, headers);
     if (StringUtils.isEmpty(query)) {
@@ -48,31 +46,25 @@ public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
     } else if (!query.contains(IS_DELETED_PROP)) {
       query = combineCqlExpressions("and", ACTIVE_UNITS_CQL, query);
     }
-    String endpoint = String.format(GET_UNITS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
-    return restClient.get(endpoint, requestContext, logger)
-      .map(jsonUnits -> jsonUnits.mapTo(AcquisitionsUnitCollection.class));
+    String endpoint = String.format(GET_UNITS_BY_QUERY, limit, offset, buildQuery(query));
+    return restClient.get(endpoint, AcquisitionsUnitCollection.class, requestContext);
   }
 
   @Override
-  public Future<AcquisitionsUnitMembershipCollection> getAcquisitionsUnitsMemberships(String query, int offset, int limit, String lang, Context context, Map<String, String> headers) {
-    logger.debug("getAcquisitionsUnitsMemberships:: Trying to get acquisition units memberships with query: {}, offset: {}, limit: {}", query, offset, limit);
+  public Future<AcquisitionsUnitMembershipCollection> getAcquisitionsUnitsMemberships(String query, int offset, int limit, Context context, Map<String, String> headers) {
+    logger.debug(
+      "getAcquisitionsUnitsMemberships:: Trying to get acquisition units memberships with query: {}, offset: {}, limit: {}", query,
+      offset, limit);
     RequestContext requestContext = new RequestContext(context, headers);
-    Promise<AcquisitionsUnitMembershipCollection> promise = Promise.promise();
-    String endpoint = String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
-    restClient.get(endpoint, requestContext, logger)
-      .onSuccess(jsonUnitsMembership -> promise.complete(jsonUnitsMembership.mapTo(AcquisitionsUnitMembershipCollection.class)))
-      .onFailure(t -> {
-        if (Objects.nonNull(t)) {
-          logger.warn("getAcquisitionsUnitsMemberships:: Error getting acquisition units memberships by endpoint: {}", endpoint, t);
-          promise.fail(t);
-        }
-      });
-    return promise.future();
+    String endpoint = String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, limit, offset, buildQuery(query));
+    return restClient.get(endpoint, AcquisitionsUnitMembershipCollection.class, requestContext)
+      .onFailure(t -> logger.warn("getAcquisitionsUnitsMemberships:: Error getting acquisition units memberships by endpoint: {}", endpoint, t));
+
   }
 
   @Override
-  public Future<String> buildAcqUnitsCqlClause(String query, int offset, int limit, String lang, Context context, Map<String, String> headers) {
-    return getAcqUnitIdsForSearch(lang, context, headers)
+  public Future<String> buildAcqUnitsCqlClause(String query, int offset, int limit, Context context, Map<String, String> headers) {
+    return getAcqUnitIdsForSearch(context, headers)
       .compose(ids -> {
         if (ids.isEmpty()) {
           return Future.succeededFuture(NO_ACQ_UNIT_ASSIGNED_CQL);
@@ -81,18 +73,18 @@ public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
       });
   }
 
-  private Future<List<String>> getAcqUnitIdsForSearch(String lang, Context context, Map<String, String> headers) {
-    return getAcqUnitIdsForUser(headers.get(OKAPI_USERID_HEADER), lang, context, headers)
-      .compose(unitsForUser -> getOpenForReadAcqUnitIds(lang, context, headers)
+  private Future<List<String>> getAcqUnitIdsForSearch(Context context, Map<String, String> headers) {
+    return getAcqUnitIdsForUser(headers.get(OKAPI_USERID_HEADER), context, headers)
+      .compose(unitsForUser -> getOpenForReadAcqUnitIds(context, headers)
       .map(unitsAllowRead -> StreamEx.of(unitsForUser, unitsAllowRead)
         .flatCollection(strings -> strings)
         .distinct()
         .toList()));
   }
 
-  private Future<List<String>> getAcqUnitIdsForUser(String userId, String lang, Context context, Map<String, String> headers) {
+  private Future<List<String>> getAcqUnitIdsForUser(String userId, Context context, Map<String, String> headers) {
     logger.debug("getAcqUnitIdsForUser:: Trying to get acquisition unit ids with userId: {}", userId);
-    return getAcquisitionsUnitsMemberships("userId==" + userId, 0, Integer.MAX_VALUE, lang, context, headers)
+    return getAcquisitionsUnitsMemberships("userId==" + userId, 0, Integer.MAX_VALUE, context, headers)
       .map(memberships -> {
         List<String> ids = memberships.getAcquisitionsUnitMemberships()
           .stream()
@@ -103,9 +95,9 @@ public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
       });
   }
 
-  private Future<List<String>> getOpenForReadAcqUnitIds(String lang, Context context, Map<String, String> headers) {
+  private Future<List<String>> getOpenForReadAcqUnitIds(Context context, Map<String, String> headers) {
     logger.debug("getOpenForReadAcqUnitIds:: Trying to get acquisition unit ids with open status");
-    return getAcquisitionsUnits("protectRead==false", 0, Integer.MAX_VALUE, lang, context, headers)
+    return getAcquisitionsUnits("protectRead==false", 0, Integer.MAX_VALUE, context, headers)
       .map(units -> {
         List<String> ids = units.getAcquisitionsUnits()
           .stream()

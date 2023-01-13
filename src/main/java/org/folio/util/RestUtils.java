@@ -1,30 +1,27 @@
 package org.folio.util;
 
-import io.vertx.ext.web.client.predicate.ErrorConverter;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import one.util.streamex.StreamEx;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.folio.HttpStatus;
-import org.folio.exception.HttpException;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.regex.Matcher;
-
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.folio.exception.ErrorCodes.GENERIC_ERROR_CODE;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_MEMBERSHIPS;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_UNITS;
 import static org.folio.util.ResourcePathResolver.CQL_SORT_BY_PATTERN;
 import static org.folio.util.ResourcePathResolver.resourcesPath;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.regex.Matcher;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.folio.exception.HttpException;
+
+import io.vertx.ext.web.client.predicate.ErrorConverter;
+import io.vertx.ext.web.client.predicate.ResponsePredicate;
+import one.util.streamex.StreamEx;
+
 public class RestUtils {
-  public static final String SEARCH_PARAMS = "?limit=%s&offset=%s%s&lang=%s";
+  public static final String SEARCH_PARAMS = "?limit=%s&offset=%s%s";
   public static final String ID = "id";
   public static final String ACQUISITIONS_UNIT_ID = "acquisitionsUnitId";
   public static final String IS_DELETED_PROP = "isDeleted";
@@ -41,23 +38,16 @@ public class RestUtils {
     result -> new HttpException(result.response().statusCode(), result.response().bodyAsString()));
   public static final ResponsePredicate SUCCESS_RESPONSE_PREDICATE = ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, ERROR_CONVERTER);
 
-  public static String buildQuery(String query, Logger logger) {
-    return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query, logger);
+  public static String buildQuery(String query) {
+    return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query);
   }
 
   /**
    * @param query  string representing CQL query
-   * @param logger {@link Logger} to log error if any
    * @return URL encoded string
    */
-  public static String encodeQuery(String query, Logger logger) {
-    try {
-      return URLEncoder.encode(query, StandardCharsets.UTF_8.toString());
-    } catch (UnsupportedEncodingException e) {
-      logger.error("Error happened while attempting to encode '{}'", query, e);
-      throw new HttpException(HttpStatus.HTTP_INTERNAL_SERVER_ERROR.toInt(),
-        GENERIC_ERROR_CODE.toError());
-    }
+  public static String encodeQuery(String query) {
+    return URLEncoder.encode(query, StandardCharsets.UTF_8);
   }
 
   /**

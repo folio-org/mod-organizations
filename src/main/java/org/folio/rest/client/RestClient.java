@@ -9,28 +9,30 @@ import static org.folio.util.RestUtils.SUCCESS_RESPONSE_PREDICATE;
 
 import java.util.Map;
 
-import io.vertx.core.Future;
-import io.vertx.core.MultiMap;
-import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.okapi.common.WebClientFactory;
 
 import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 
 public class RestClient {
-   /**
+  private static final Logger logger = LogManager.getLogger(RestClient.class);
+
+  /**
    * A common method to create a new entry in the storage based on the Json Object.
    *
    * @param recordData json to post
    * @return future holding id of newly created entity Record or an exception if process failed
    */
   public <T> Future<T> post(T recordData, String endpoint, Class<T> responseType,
-                            RequestContext requestContext, Logger logger) {
+                            RequestContext requestContext) {
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
       if (logger.isDebugEnabled()) {
         logger.debug("Trying to create object by endpoint '{}' and body '{}'", endpoint, JsonObject.mapFrom(recordData).encodePrettily());
@@ -52,28 +54,22 @@ public class RestClient {
    *
    * @return future jsonObject of created entity Record or an exception if failed
    */
-  public Future<JsonObject> get(String endpoint, RequestContext requestContext, Logger logger) {
-    Promise<JsonObject> promise = Promise.promise();
+  public <T> Future<T> get(String endpoint, Class<T> responseType,  RequestContext requestContext) {
+    logger.debug("Calling GET {}", endpoint);
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
-      if(logger.isDebugEnabled()) {
-        logger.debug("Trying to get object by endpoint '{}'", endpoint);
-      }
-      getVertxWebClient(requestContext.getContext()).getAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
-        .putHeaders(caseInsensitiveHeader)
-        .expect(SUCCESS_RESPONSE_PREDICATE)
-        .send()
-        .map(HttpResponse::bodyAsJsonObject)
-        .onSuccess(jsonObject -> {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Successfully retrieved: {}", jsonObject.encodePrettily());
-          }
-          promise.complete(jsonObject);
-        })
-        .onFailure(t -> {
-          logger.error("Error getting object by endpoint '{}'", endpoint);
-          promise.fail(t);
-        });
-    return promise.future();
+
+   return getVertxWebClient(requestContext.getContext())
+      .getAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
+      .putHeaders(caseInsensitiveHeader)
+      .expect(SUCCESS_RESPONSE_PREDICATE)
+      .send()
+      .map(HttpResponse::bodyAsJsonObject)
+      .map(jsonObject -> {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Successfully retrieved: {}", jsonObject.encodePrettily());
+        }
+        return jsonObject.mapTo(responseType);
+      });
   }
 
   /**
@@ -82,28 +78,23 @@ public class RestClient {
    * @param recordData json to use for update operation
    * @param endpoint   endpoint
    */
-  public Future<Void> put(String endpoint, JsonObject recordData, Logger logger, RequestContext context) {
-    Promise<Void> promise = Promise.promise();
+  public Future<Void> put(String endpoint, JsonObject recordData, RequestContext context) {
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(context.getHeaders());
       if(logger.isDebugEnabled()) {
         logger.debug("Trying to update object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
       }
-      getVertxWebClient(context.getContext())
+      return getVertxWebClient(context.getContext())
         .putAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
         .putHeaders(caseInsensitiveHeader)
         .expect(SUCCESS_RESPONSE_PREDICATE)
         .sendJson(recordData)
         .onSuccess(response -> {
-          if(logger.isDebugEnabled()) {
+          if (logger.isDebugEnabled()) {
             logger.debug("Object was successfully updated. Record with '{}' id has been updated", endpoint);
           }
-          promise.complete();
         })
-        .onFailure(t -> {
-          promise.fail(t);
-          logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), t);
-        });
-    return promise.future();
+        .onFailure(t -> logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), t))
+        .mapEmpty();
   }
 
   /**
@@ -111,23 +102,18 @@ public class RestClient {
    *
    * @param endpoint endpoint
    */
-  public Future<Void> delete(String endpoint, RequestContext requestContext, Logger logger) {
-    Promise<Void> promise = Promise.promise();
+  public Future<Void> delete(String endpoint, RequestContext requestContext) {
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
       if(logger.isDebugEnabled()) {
         logger.debug("Trying to delete object with endpoint: {}", endpoint);
       }
-      getVertxWebClient(requestContext.getContext())
+     return getVertxWebClient(requestContext.getContext())
         .deleteAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
         .putHeaders(caseInsensitiveHeader)
         .expect(SUCCESS_RESPONSE_PREDICATE)
         .send()
-        .onSuccess(res -> promise.complete())
-        .onFailure(t -> {
-          logger.error("Object cannot be deleted with using endpoint: {}", endpoint, t);
-          promise.fail(t);
-        });
-    return promise.future();
+        .onFailure(t -> logger.error("Object cannot be deleted with using endpoint: {}", endpoint, t))
+        .mapEmpty();
   }
 
   private String verifyAndExtractRecordId(HttpResponse<Buffer> response) {

@@ -9,7 +9,7 @@ import org.folio.rest.acq.model.AcquisitionsUnitMembershipCollection;
 import io.vertx.core.Context;
 
 public interface AcquisitionsUnitsService {
-  Future<AcquisitionsUnitCollection> getAcquisitionsUnits(String query, int offset, int limit, String lang, Context context, Map<String, String> headers);
-  Future<AcquisitionsUnitMembershipCollection> getAcquisitionsUnitsMemberships(String query, int offset, int limit, String lang, Context context, Map<String, String> headers);
-  Future<String> buildAcqUnitsCqlClause(String query, int offset, int limit, String lang, Context context, Map<String, String> headers);
+  Future<AcquisitionsUnitCollection> getAcquisitionsUnits(String query, int offset, int limit, Context context, Map<String, String> headers);
+  Future<AcquisitionsUnitMembershipCollection> getAcquisitionsUnitsMemberships(String query, int offset, int limit, Context context, Map<String, String> headers);
+  Future<String> buildAcqUnitsCqlClause(String query, int offset, int limit, Context context, Map<String, String> headers);
 }

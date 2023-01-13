@@ -13,28 +13,26 @@ import static org.folio.util.RestUtils.combineCqlExpressions;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.HttpStatus;
 import org.folio.exception.HttpException;
 import org.folio.rest.client.RequestContext;
+import org.folio.rest.client.RestClient;
 import org.folio.rest.jaxrs.model.Account;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
-import org.folio.rest.client.RestClient;
 import org.folio.service.protection.AcquisitionsUnitsService;
 import org.folio.service.protection.ProtectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
 @Service
@@ -58,7 +56,7 @@ public class OrganizationStorageService implements OrganizationService {
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
-    return restClient.post(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext, logger);
+    return restClient.post(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext);
   }
 
   private boolean isSameAccountNumbers(Organization organization) {
@@ -73,28 +71,12 @@ public class OrganizationStorageService implements OrganizationService {
   public Future<Organization> getOrganizationById(String id, String lang, Context context, Map<String, String> headers) {
     logger.debug("getOrganizationById:: Trying to get organization by id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
-    Promise<Organization> promise = Promise.promise();
-    restClient.get(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
-      .map(json -> json.mapTo(Organization.class))
-      .map(organization ->
-        protectionService.checkOperationsRestrictions(organization.getAcqUnitIds(), Collections.singleton(READ), lang, context, headers)
-        .onSuccess(ok ->
-          promise.complete(organization)
-        )
-        .onFailure(t -> {
-          if (Objects.nonNull(t)) {
-            logger.warn("Operation is restricted by acquisition units for organization id: {}", organization.getId(), t);
-            promise.fail(t);
-          }
-        })
-      )
-      .onFailure(t -> {
-        if (Objects.nonNull(t)) {
-          logger.error("Error loading organization with id: {}", id, t);
-          promise.fail(t);
-        }
-      });
-    return promise.future();
+    return restClient.get(resourceByIdPath(ORGANIZATIONS, id), Organization.class, requestContext)
+      .compose(organization -> protectionService
+        .checkOperationsRestrictions(organization.getAcqUnitIds(), Collections.singleton(READ), context, headers)
+          .map(organization)
+          .onFailure(t -> logger.warn("Operation is restricted by acquisition units for organization id: {}", organization.getId(), t)))
+      .onFailure(t -> logger.error("Error loading organization with id: {}", id, t));
   }
 
   @Override
@@ -102,26 +84,14 @@ public class OrganizationStorageService implements OrganizationService {
       Context context, Map<String, String> headers) {
     logger.debug("getOrganizationCollection:: Trying to get organization collection with query: {}, offset: {}, limit: {}", query, offset, limit);
     RequestContext requestContext = new RequestContext(context, headers);
-    Promise<OrganizationCollection> promise = Promise.promise();
-    acquisitionsUnitsService.buildAcqUnitsCqlClause(query, offset, limit, lang, context, headers)
+    return acquisitionsUnitsService.buildAcqUnitsCqlClause(query, offset, limit, context, headers)
       .compose(clause -> {
         String endpoint = StringUtils.isEmpty(query) ?
-          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(clause, logger), lang) :
-          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(combineCqlExpressions("and", clause, query), logger), lang);
-        return restClient.get(endpoint, requestContext, logger);
+          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(clause), lang) :
+          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(combineCqlExpressions("and", clause, query)), lang);
+        return restClient.get(endpoint, OrganizationCollection.class, requestContext);
       })
-      .compose(json -> {
-        OrganizationCollection organizationCollection = json.mapTo(OrganizationCollection.class);
-        promise.complete(organizationCollection);
-      return promise.future();
-      })
-      .onFailure( t -> {
-        if (Objects.nonNull(t)) {
-          logger.warn("Error loading organization collection with query: {}, offset: {}, limit: {}", query, offset, limit, t);
-          promise.fail(t);
-        }
-      });
-    return promise.future();
+      .onFailure( t -> logger.warn("Error loading organization collection with query: {}, offset: {}, limit: {}", query, offset, limit, t));
   }
 
   @Override
@@ -134,25 +104,23 @@ public class OrganizationStorageService implements OrganizationService {
       updatedOrganization.setId(id);
     } else if (!id.equals(updatedOrganization.getId())) {
       logger.warn("updateOrganization:: Mismatch between id '{}' in path and request body '{}'", id, updatedOrganization.getId());
-      return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
-        MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
+      return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), MISMATCH_BETWEEN_ID_IN_PATH_AND_BODY.toError()));
     }
     if (isSameAccountNumbers(updatedOrganization)) {
       logger.warn("updateOrganization:: Account number of organization '{}' is not unique", id);
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
-    return restClient.get(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger)
-      .map(existingOrganizationJson -> existingOrganizationJson.mapTo(Organization.class))
-      .compose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, lang, context, headers)
-      .compose(ok -> restClient.put(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), logger, requestContext)));
+    return restClient.get(resourceByIdPath(ORGANIZATIONS, id), Organization.class, requestContext)
+      .compose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, context, headers)
+      .compose(ok -> restClient.put(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), requestContext)));
   }
 
   @Override
   public Future<Void> deleteOrganizationById(String id, Context context, Map<String, String> headers) {
     logger.debug("deleteOrganizationById:: Trying to delete organization by id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
-    return restClient.delete(resourceByIdPath(ORGANIZATIONS, id), requestContext, logger);
+    return restClient.delete(resourceByIdPath(ORGANIZATIONS, id), requestContext);
   }
 
   @Autowired
