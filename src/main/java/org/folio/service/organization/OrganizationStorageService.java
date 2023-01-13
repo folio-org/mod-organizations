@@ -89,7 +89,7 @@ public class OrganizationStorageService implements OrganizationService {
         }))
       .onFailure(t -> {
         if (Objects.nonNull(t)) {
-          logger.debug("Error loading organization", t);
+          logger.error("Error loading organization with id: {}", id, t);
           promise.fail(t);
         }
       });
