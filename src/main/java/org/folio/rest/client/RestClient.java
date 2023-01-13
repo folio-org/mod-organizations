@@ -44,7 +44,8 @@ public class RestClient {
           return bufferHttpResponse.bodyAsJsonObject()
             .put(ID, id)
             .mapTo(responseType);
-        });
+        })
+        .onFailure(t -> logger.error("Object could not be created with using endpoint: {} and body: {}", endpoint, JsonObject.mapFrom(recordData).encodePrettily(), t));
   }
 
   /**
