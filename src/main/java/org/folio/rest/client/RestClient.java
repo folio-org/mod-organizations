@@ -122,10 +122,7 @@ public class RestClient {
         .putHeaders(caseInsensitiveHeader)
         .expect(SUCCESS_RESPONSE_PREDICATE)
         .send()
-        .compose(res -> {
-          promise.complete();
-        return promise.future();
-        })
+        .onSuccess(res -> promise.complete())
         .onFailure(t -> {
           logger.error("Object cannot be deleted with using endpoint: {}", endpoint, t);
           promise.fail(t);
