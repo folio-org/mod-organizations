@@ -76,26 +76,23 @@ public class RestClient {
   /**
    * A common method to update an entry in the storage
    *
-   * @param recordData json to use for update operation
+   * @param dataObject object to use for update operation
    * @param endpoint   endpoint
    */
-  public Future<Void> put(String endpoint, JsonObject recordData, RequestContext context) {
-    var caseInsensitiveHeader = convertToCaseInsensitiveMap(context.getHeaders());
-      if(logger.isDebugEnabled()) {
-        logger.debug("Trying to update object by endpoint '{}' and body '{}'", endpoint, recordData.encodePrettily());
-      }
-      return getVertxWebClient(context.getContext())
-        .putAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
-        .putHeaders(caseInsensitiveHeader)
-        .expect(SUCCESS_RESPONSE_PREDICATE)
-        .sendJson(recordData)
-        .onSuccess(response -> {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Object was successfully updated. Record with '{}' id has been updated", endpoint);
-          }
-        })
-        .onFailure(t -> logger.error("Object could not be updated with using endpoint: {} and body: {}", endpoint, recordData.encodePrettily(), t))
-        .mapEmpty();
+  public <T> Future<Void> put(String endpoint, T dataObject,  RequestContext requestContext) {
+    var recordData = JsonObject.mapFrom(dataObject);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Sending 'PUT {}' with body: {}", endpoint, recordData.encodePrettily());
+    }
+    var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
+
+    return getVertxWebClient(requestContext.getContext())
+      .putAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
+      .putHeaders(caseInsensitiveHeader)
+      .expect(SUCCESS_RESPONSE_PREDICATE)
+      .sendJson(recordData)
+      .onFailure(logger::error)
+      .mapEmpty();
   }
 
   /**

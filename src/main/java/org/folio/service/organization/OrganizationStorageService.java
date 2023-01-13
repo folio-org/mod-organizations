@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 
 @Service
 public class OrganizationStorageService implements OrganizationService {
@@ -113,7 +112,7 @@ public class OrganizationStorageService implements OrganizationService {
     }
     return restClient.get(resourceByIdPath(ORGANIZATIONS, id), Organization.class, requestContext)
       .compose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, context, headers)
-      .compose(ok -> restClient.put(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), JsonObject.mapFrom(updatedOrganization), requestContext)));
+      .compose(ok -> restClient.put(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), updatedOrganization, requestContext)));
   }
 
   @Override
