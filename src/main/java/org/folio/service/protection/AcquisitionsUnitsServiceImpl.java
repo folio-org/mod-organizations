@@ -59,17 +59,15 @@ public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
     RequestContext requestContext = new RequestContext(context, headers);
     Promise<AcquisitionsUnitMembershipCollection> promise = Promise.promise();
     String endpoint = String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, limit, offset, buildQuery(query, logger), lang);
-    return restClient.get(endpoint, requestContext, logger)
-      .compose(jsonUnitsMembership -> {
-        promise.complete(jsonUnitsMembership.mapTo(AcquisitionsUnitMembershipCollection.class));
-        return promise.future();
-      })
+    restClient.get(endpoint, requestContext, logger)
+      .onSuccess(jsonUnitsMembership -> promise.complete(jsonUnitsMembership.mapTo(AcquisitionsUnitMembershipCollection.class)))
       .onFailure(t -> {
         if (Objects.nonNull(t)) {
           logger.warn("getAcquisitionsUnitsMemberships:: Error getting acquisition units memberships by endpoint: {}", endpoint, t);
           promise.fail(t);
         }
       });
+    return promise.future();
   }
 
   @Override

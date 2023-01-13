@@ -84,7 +84,7 @@ public class OrganizationStorageService implements OrganizationService {
       .onFailure(t -> {
         if (Objects.nonNull(t)) {
           logger.warn("Error loading organization with id: {}", organization.getId(), t);
-            promise.fail(t);
+          promise.fail(t);
           }
         }))
       .onFailure(t -> {
