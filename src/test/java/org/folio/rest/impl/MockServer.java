@@ -21,29 +21,27 @@ import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_NO_ACQ;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_READ_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_UPDATE_PROTECTED;
-import static org.folio.service.BaseService.ACQUISITIONS_UNIT_ID;
-import static org.folio.service.BaseService.ACQUISITIONS_UNIT_IDS;
-import static org.folio.service.BaseService.ACTIVE_UNITS_CQL;
-import static org.folio.service.BaseService.ALL_UNITS_CQL;
-import static org.folio.service.BaseService.GET_UNITS_MEMBERSHIPS_BY_QUERY;
-import static org.folio.service.BaseService.NO_ACQ_UNIT_ASSIGNED_CQL;
-import static org.folio.service.BaseService.SEARCH_PARAMS;
-import static org.folio.service.BaseService.buildQuery;
-import static org.folio.service.BaseService.combineCqlExpressions;
-import static org.folio.service.BaseService.convertIdsToCqlQuery;
 import static org.folio.service.organization.OrganizationStorageService.GET_ORGANIZATIONS_BY_QUERY;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_UNITS;
 import static org.folio.util.ResourcePathResolver.ORGANIZATIONS;
 import static org.folio.util.ResourcePathResolver.resourceByIdPath;
 import static org.folio.util.ResourcePathResolver.resourcesPath;
+import static org.folio.util.RestUtils.ACQUISITIONS_UNIT_ID;
+import static org.folio.util.RestUtils.ACQUISITIONS_UNIT_IDS;
+import static org.folio.util.RestUtils.ACTIVE_UNITS_CQL;
+import static org.folio.util.RestUtils.ALL_UNITS_CQL;
+import static org.folio.util.RestUtils.GET_UNITS_MEMBERSHIPS_BY_QUERY;
+import static org.folio.util.RestUtils.NO_ACQ_UNIT_ASSIGNED_CQL;
+import static org.folio.util.RestUtils.SEARCH_PARAMS;
+import static org.folio.util.RestUtils.buildQuery;
+import static org.folio.util.RestUtils.combineCqlExpressions;
+import static org.folio.util.RestUtils.convertIdsToCqlQuery;
 
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 
@@ -65,7 +63,6 @@ public class MockServer {
   public static final String USER_UPDATE_ONLY_MEMBERSHIP_ID = "6bf43c5a-6513-4ce0-a3bd-ac447b222094";
   public static final String USER_FULL_PROTECTED_MEMBERSHIP_ID = "480dba68-ee84-4b9c-a374-7e824fc49227";
   public static final String ISE_X_OKAPI_TENANT = "ISE";
-  private static final Logger logger = LogManager.getLogger(MockServer.class);
   public static WireMockServer wireMockServer;
 
   public static void init(int mockPort) {
@@ -86,7 +83,7 @@ public class MockServer {
           .withStatus(200)));
 
       wireMockServer.stubFor(get(urlEqualTo(
-          String.format(resourcesPath(e.getResource()) + SEARCH_PARAMS, 0, 1, buildQuery("id==" + e.getId(), logger), "en")))
+          String.format(resourcesPath(e.getResource()) + SEARCH_PARAMS, 0, 1, buildQuery("id==" + e.getId()))))
             .willReturn(aResponse().withBody(e.getCollection()
               .encode())
               .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -129,7 +126,7 @@ public class MockServer {
           .withStatus(500)));
 
     wireMockServer.stubFor(get(urlEqualTo(String.format(resourcesPath(ORGANIZATIONS) + SEARCH_PARAMS, 0, 1,
-      buildQuery("id==" + ID_INTERNAL_SERVER_ERROR, logger), "en")))
+      buildQuery("id==" + ID_INTERNAL_SERVER_ERROR))))
       .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON)
         .withStatus(500)));
 
@@ -266,28 +263,28 @@ public class MockServer {
   private static String urlForAcqUnit(boolean activeOnly, String... ids) {
     return String.format(resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS, Integer.MAX_VALUE, 0,
       buildQuery(combineCqlExpressions("and", activeOnly ? ACTIVE_UNITS_CQL : ALL_UNITS_CQL,
-        convertIdsToCqlQuery(Arrays.asList(ids))), logger), "en");
+        convertIdsToCqlQuery(Arrays.asList(ids)))));
   }
 
   private static String urlOpenForReadAcqUnit() {
     return String.format(resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS, Integer.MAX_VALUE, 0,
-      buildQuery(combineCqlExpressions("and", ACTIVE_UNITS_CQL, "protectRead==false"), logger), "en");
+      buildQuery(combineCqlExpressions("and", ACTIVE_UNITS_CQL, "protectRead==false")));
   }
 
   private static String urlForAcqUnitMembership(String userId) {
-    return String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, Integer.MAX_VALUE, 0, buildQuery("userId==" + userId, logger), "en");
+    return String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, Integer.MAX_VALUE, 0, buildQuery("userId==" + userId));
   }
 
   private static String urlForAcqUnitMembership(String userId, String... acqUnitIds) {
     String query = String.format("userId==%s AND %s", userId, convertIdsToCqlQuery(Arrays.stream(acqUnitIds).collect(Collectors.toList()), ACQUISITIONS_UNIT_ID, true));
-    return String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, Integer.MAX_VALUE, 0, buildQuery(query, logger), "en");
+    return String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, Integer.MAX_VALUE, 0, buildQuery(query));
   }
 
   private static String urlForQueryWithAcqUnitClause(String organizationId, String... acqUnitIds) {
     String query = organizationId.equals(EMPTY) ? EMPTY : "id==" + organizationId;
     String clause = String.format("%s or (%s)", convertIdsToCqlQuery(Arrays.stream(acqUnitIds).collect(Collectors.toList()), ACQUISITIONS_UNIT_IDS, false), NO_ACQ_UNIT_ASSIGNED_CQL);
     return StringUtils.isEmpty(query) ?
-      String.format(GET_ORGANIZATIONS_BY_QUERY, 10, 0, buildQuery(clause, logger), "en") :
-      String.format(GET_ORGANIZATIONS_BY_QUERY, 10, 0, buildQuery(combineCqlExpressions("and", clause, query), logger), "en");
+      String.format(GET_ORGANIZATIONS_BY_QUERY, 10, 0, buildQuery(clause)) :
+      String.format(GET_ORGANIZATIONS_BY_QUERY, 10, 0, buildQuery(combineCqlExpressions("and", clause, query)));
   }
 }

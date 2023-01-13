@@ -1,5 +1,6 @@
 package org.folio.config;
 
+import org.folio.rest.client.RestClient;
 import org.folio.service.organization.OrganizationService;
 import org.folio.service.organization.OrganizationStorageService;
 import org.folio.service.protection.AcquisitionsUnitsService;
@@ -14,6 +15,11 @@ public class ApplicationConfig {
   @Bean
   public OrganizationService organizationService() {
     return new OrganizationStorageService();
+  }
+
+  @Bean
+  public RestClient restClient() {
+    return new RestClient();
   }
 
   @Bean

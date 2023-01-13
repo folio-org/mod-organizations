@@ -35,8 +35,8 @@ public class OrganizationApi extends BaseApi implements Organizations {
   @Override
   public void getOrganizationsOrganizations(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     organizationService.getOrganizationCollection(offset, limit, query, lang, vertxContext, okapiHeaders)
-      .thenAccept(organizations -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organizations))))
-      .exceptionally(t -> handleErrorResponse(asyncResultHandler, t));
+      .onSuccess(organizations -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organizations))))
+      .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
   }
 
   @Override
@@ -44,9 +44,9 @@ public class OrganizationApi extends BaseApi implements Organizations {
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to create organization with name: {}", entity.getName());
     organizationService.createOrganization(entity, vertxContext, okapiHeaders)
-      .thenAccept(organization -> asyncResultHandler.handle(succeededFuture(buildResponseWithLocation(okapiHeaders.get(OKAPI_URL),
+      .onSuccess(organization -> asyncResultHandler.handle(succeededFuture(buildResponseWithLocation(okapiHeaders.get(OKAPI_URL),
           String.format(ORGANIZATIONS_LOCATION_PREFIX, organization.getId()), organization))))
-      .exceptionally(t -> handleErrorResponse(asyncResultHandler, t));
+      .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
   }
 
   @Override
@@ -54,8 +54,8 @@ public class OrganizationApi extends BaseApi implements Organizations {
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to get organization with id: {}", id);
     organizationService.getOrganizationById(id, lang, vertxContext, okapiHeaders)
-      .thenAccept(organization -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organization))))
-      .exceptionally(t -> handleErrorResponse(asyncResultHandler, t));
+      .onSuccess(organization -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organization))))
+      .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
   }
 
   @Override
@@ -63,8 +63,8 @@ public class OrganizationApi extends BaseApi implements Organizations {
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to update organization with id: {}", id);
     organizationService.updateOrganizationById(id, entity, lang, vertxContext, okapiHeaders)
-      .thenAccept(vVoid -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
-      .exceptionally(t -> handleErrorResponse(asyncResultHandler, t));
+      .onSuccess(vVoid -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
+      .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
   }
 
   @Override
@@ -72,7 +72,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to delete organization by id: {}", id);
     organizationService.deleteOrganizationById(id, vertxContext, okapiHeaders)
-      .thenAccept(vVoid -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
-      .exceptionally(t -> handleErrorResponse(asyncResultHandler, t));
+      .onSuccess(vVoid -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
+      .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
   }
 }

@@ -17,7 +17,7 @@ import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_NO_ACQ;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_READ_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_UPDATE_PROTECTED;
-import static org.folio.service.BaseService.SEARCH_PARAMS;
+import static org.folio.util.RestUtils.SEARCH_PARAMS;
 import static wiremock.org.hamcrest.MatcherAssert.assertThat;
 import static wiremock.org.hamcrest.Matchers.equalTo;
 import static wiremock.org.hamcrest.Matchers.hasSize;
@@ -208,7 +208,7 @@ class OrganizationApiTest extends ApiTestBase {
 
     JsonObject expected = e.getCollection();
 
-    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId());
     JsonObject actual = new JsonObject(
       verifyGetRequest(endpoint, headersForUserAndPermissions(e.getUserId()), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
@@ -223,7 +223,7 @@ class OrganizationApiTest extends ApiTestBase {
 
     JsonObject expected = e.getCollection();
 
-    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId());
     JsonObject actual = new JsonObject(
       verifyGetRequest(endpoint, headersForUserAndPermissions(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
@@ -238,7 +238,7 @@ class OrganizationApiTest extends ApiTestBase {
 
     JsonObject expected = JsonObject.mapFrom(new OrganizationCollection().withTotalRecords(0));
 
-    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId());
     JsonObject actual = new JsonObject(
       verifyGetRequest(endpoint, headersForUserAndPermissions(USER_NO_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
@@ -253,7 +253,7 @@ class OrganizationApiTest extends ApiTestBase {
 
     JsonObject expected = JsonObject.mapFrom(new OrganizationCollection().withTotalRecords(0));
 
-    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId(), "en");
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + e.getId());
     JsonObject actual = new JsonObject(
       verifyGetRequest(endpoint, headersForUserAndPermissions(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
@@ -266,7 +266,7 @@ class OrganizationApiTest extends ApiTestBase {
   void testGetByQueryInternalServerError(TestEntities e) {
     logger.info("===== Verify GET by query " + e.name() + ": Internal Server Error =====");
 
-    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + ID_INTERNAL_SERVER_ERROR, "en");
+    String endpoint = String.format(e.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + ID_INTERNAL_SERVER_ERROR);
     verifyGetRequest(endpoint, headersForUserAndPermissions(USER_READ_ONLY_MEMBERSHIP_ID), APPLICATION_JSON, 500);
   }
 

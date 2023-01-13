@@ -3,12 +3,14 @@ package org.folio.util;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ResourcePathResolver {
 
   public static final String ACQUISITIONS_UNITS = "acquisitionsUnits";
   public static final String ACQUISITIONS_MEMBERSHIPS = "acquisitionsMemberships";
+  public static final Pattern CQL_SORT_BY_PATTERN = Pattern.compile("(.*)(\\ssortBy\\s.*)", Pattern.CASE_INSENSITIVE);
   public static final String ORGANIZATIONS = "organizations";
   private static final Map<String, String> SUB_OBJECT_ITEM_APIS;
   private static final Map<String, String> SUB_OBJECT_COLLECTION_APIS;
