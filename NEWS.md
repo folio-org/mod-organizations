@@ -1,7 +1,7 @@
 ## 1.8.0 - Unreleased
 
 ## 1.7.0 - Released (Orchid R1 2023)
-The primary focus of this release was to update ...
+The primary focus of this release was to replace old HTTP Clients with Vertx WebClient and improvement Logging
 
 [Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.6.0...v1.7.0)
 
