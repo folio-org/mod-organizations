@@ -1,4 +1,14 @@
-## 1.7.0 - Unreleased
+## 1.8.0 - Unreleased
+
+## 1.7.0 - Released (Orchid R1 2023)
+The primary focus of this release was to replace old HTTP Clients with Vertx WebClient and improvement Logging
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.6.0...v1.7.0)
+
+### Stories
+* [MODORG-45](https://issues.folio.org/browse/MODORG-45) - Logging improvement - Configuration
+* [MODORG-42](https://issues.folio.org/browse/MODORG-42) - Replace old HTTP Clients with Vertx WebClient
+* [MODORG-37](https://issues.folio.org/browse/MODORG-37) - Logging improvement
 
 ## 1.6.0 - Released
 The primary focus of this release was to update RMB up to 35.0.1
