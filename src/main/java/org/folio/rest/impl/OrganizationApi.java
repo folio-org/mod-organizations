@@ -33,14 +33,14 @@ public class OrganizationApi extends BaseApi implements Organizations {
   }
 
   @Override
-  public void getOrganizationsOrganizations(String query, int offset, int limit, String lang, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    organizationService.getOrganizationCollection(offset, limit, query, lang, vertxContext, okapiHeaders)
+  public void getOrganizationsOrganizations(String query, String totalRecords, int offset, int limit, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    organizationService.getOrganizationCollection(offset, limit, query, vertxContext, okapiHeaders)
       .onSuccess(organizations -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organizations))))
       .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
   }
 
   @Override
-  public void postOrganizationsOrganizations(String lang, Organization entity, Map<String, String> okapiHeaders,
+  public void postOrganizationsOrganizations(Organization entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to create organization with name: {}", entity.getName());
     organizationService.createOrganization(entity, vertxContext, okapiHeaders)
@@ -50,25 +50,25 @@ public class OrganizationApi extends BaseApi implements Organizations {
   }
 
   @Override
-  public void getOrganizationsOrganizationsById(String id, String lang, Map<String, String> okapiHeaders,
+  public void getOrganizationsOrganizationsById(String id, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to get organization with id: {}", id);
-    organizationService.getOrganizationById(id, lang, vertxContext, okapiHeaders)
+    organizationService.getOrganizationById(id, vertxContext, okapiHeaders)
       .onSuccess(organization -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organization))))
       .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
   }
 
   @Override
-  public void putOrganizationsOrganizationsById(String id, String lang, Organization entity, Map<String, String> okapiHeaders,
+  public void putOrganizationsOrganizationsById(String id, Organization entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to update organization with id: {}", id);
-    organizationService.updateOrganizationById(id, entity, lang, vertxContext, okapiHeaders)
+    organizationService.updateOrganizationById(id, entity, vertxContext, okapiHeaders)
       .onSuccess(vVoid -> asyncResultHandler.handle(succeededFuture(buildNoContentResponse())))
       .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
   }
 
   @Override
-  public void deleteOrganizationsOrganizationsById(String id, String lang, Map<String, String> okapiHeaders,
+  public void deleteOrganizationsOrganizationsById(String id, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to delete organization by id: {}", id);
     organizationService.deleteOrganizationById(id, vertxContext, okapiHeaders)

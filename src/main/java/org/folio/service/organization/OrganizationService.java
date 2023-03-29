@@ -28,20 +28,19 @@ public interface OrganizationService {
    * @param headers OKAPI headers
    * @return {@link Organization}
    */
-  Future<Organization> getOrganizationById(String id, String lang, Context context, Map<String, String> headers);
+  Future<Organization> getOrganizationById(String id, Context context, Map<String, String> headers);
 
   /**
    * This method returns {@link OrganizationCollection} by query
    *
    * @param offset  offset
    * @param limit   limit
-   * @param lang    language
    * @param query   query
    * @param context Vert.X context
    * @param headers OKAPI headers
    * @return collection of organizations {@link OrganizationCollection}
    */
-  Future<OrganizationCollection> getOrganizationCollection(int offset, int limit, String lang, String query,
+  Future<OrganizationCollection> getOrganizationCollection(int offset, int limit, String query,
       Context context, Map<String, String> headers);
 
   /**
@@ -53,7 +52,7 @@ public interface OrganizationService {
    * @param headers OKAPI headers
    * @return void future
    */
-  Future<Void> updateOrganizationById(String id, Organization entity, String lang, Context context, Map<String, String> headers);
+  Future<Void> updateOrganizationById(String id, Organization entity, Context context, Map<String, String> headers);
 
   /**
    * This method deletes {@link Organization} by ID

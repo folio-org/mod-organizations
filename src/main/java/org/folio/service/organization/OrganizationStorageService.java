@@ -67,7 +67,7 @@ public class OrganizationStorageService implements OrganizationService {
   }
 
   @Override
-  public Future<Organization> getOrganizationById(String id, String lang, Context context, Map<String, String> headers) {
+  public Future<Organization> getOrganizationById(String id, Context context, Map<String, String> headers) {
     logger.debug("getOrganizationById:: Trying to get organization by id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
     return restClient.get(resourceByIdPath(ORGANIZATIONS, id), Organization.class, requestContext)
@@ -79,22 +79,22 @@ public class OrganizationStorageService implements OrganizationService {
   }
 
   @Override
-  public Future<OrganizationCollection> getOrganizationCollection(int offset, int limit, String query, String lang,
+  public Future<OrganizationCollection> getOrganizationCollection(int offset, int limit, String query,
       Context context, Map<String, String> headers) {
     logger.debug("getOrganizationCollection:: Trying to get organization collection with query: {}, offset: {}, limit: {}", query, offset, limit);
     RequestContext requestContext = new RequestContext(context, headers);
     return acquisitionsUnitsService.buildAcqUnitsCqlClause(query, offset, limit, context, headers)
       .compose(clause -> {
         String endpoint = StringUtils.isEmpty(query) ?
-          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(clause), lang) :
-          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(combineCqlExpressions("and", clause, query)), lang);
+          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(clause)) :
+          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(combineCqlExpressions("and", clause, query)));
         return restClient.get(endpoint, OrganizationCollection.class, requestContext);
       })
       .onFailure( t -> logger.warn("Error loading organization collection with query: {}, offset: {}, limit: {}", query, offset, limit, t));
   }
 
   @Override
-  public Future<Void> updateOrganizationById(String id, Organization updatedOrganization, String lang, Context context,
+  public Future<Void> updateOrganizationById(String id, Organization updatedOrganization, Context context,
       Map<String, String> headers) {
     logger.debug("updateOrganization:: Trying to update organization with id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
