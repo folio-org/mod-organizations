@@ -69,7 +69,7 @@ public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
         if (ids.isEmpty()) {
           return Future.succeededFuture(NO_ACQ_UNIT_ASSIGNED_CQL);
         }
-        return Future.succeededFuture(String.format("%s or (%s)", convertIdsToCqlQuery(ids, ACQUISITIONS_UNIT_IDS, true), NO_ACQ_UNIT_ASSIGNED_CQL));
+        return Future.succeededFuture(String.format("%s or (%s)", convertIdsToCqlQuery(ids, ACQUISITIONS_UNIT_IDS, false), NO_ACQ_UNIT_ASSIGNED_CQL));
       });
   }
 
