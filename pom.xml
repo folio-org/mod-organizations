@@ -14,7 +14,7 @@
   </licenses>
 
   <properties>
-    <aspectj.version>1.9.7</aspectj.version>
+    <aspectj.version>1.9.19</aspectj.version>
     <raml-module-builder.version>35.0.1</raml-module-builder.version>
     <vertx.version>4.3.4</vertx.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
@@ -117,7 +117,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <release>11</release>
+          <release>17</release>
           <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
@@ -242,12 +242,12 @@
       </plugin>
 
       <plugin>
-        <groupId>com.nickwongdev</groupId>
+        <groupId>dev.aspectj</groupId>
         <artifactId>aspectj-maven-plugin</artifactId>
-        <version>1.12.6</version>
+        <version>1.13.1</version>
         <configuration>
           <verbose>true</verbose>
-          <complianceLevel>11</complianceLevel>
+          <complianceLevel>17</complianceLevel>
           <XaddSerialVersionUID>true</XaddSerialVersionUID>
           <showWeaveInfo>true</showWeaveInfo>
           <forceAjcCompile>true</forceAjcCompile>
