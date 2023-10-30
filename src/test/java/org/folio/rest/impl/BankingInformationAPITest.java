@@ -13,10 +13,12 @@ import java.util.stream.Collectors;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.folio.config.Constants.ID;
 import static org.folio.rest.impl.TestEntities.BANKING_INFORMATION_ENTITY;
+import static org.folio.util.RestUtils.SEARCH_PARAMS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static wiremock.org.hamcrest.MatcherAssert.assertThat;
 import static wiremock.org.hamcrest.Matchers.*;
 
-public class BankingInformationAPITest extends ApiTestBase {
+class BankingInformationAPITest extends ApiTestBase {
 
   private static final Logger logger = LogManager.getLogger(BankingInformationAPITest.class);
 
@@ -63,6 +65,20 @@ public class BankingInformationAPITest extends ApiTestBase {
     JsonObject actual = new JsonObject(verifyGetRequest(url, headers, APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
       .print());
     assertThat(actual, equalTo(expected));
+  }
+
+  @Test
+  void shouldSuccessfullyGetCollection() {
+    logger.info("===== Verify GET collection : Successful =====");
+
+    Headers headers = Headers.headers(X_OKAPI_URL, X_OKAPI_TENANT);
+
+    String endpoint = String.format(BANKING_INFORMATION_ENTITY.getUrl() + SEARCH_PARAMS, 10, 0, "&query=id==" + BANKING_INFORMATION_ENTITY.getId());
+    JsonObject actual = new JsonObject(
+      verifyGetRequest(endpoint, headers, APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
+        .print());
+
+    assertEquals(actual.getInteger("totalRecords"), 1);
   }
 
   @Test
