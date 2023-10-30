@@ -66,6 +66,10 @@ public class TestSuite {
     isInitialized = false;
   }
 
+  public static boolean isNotInitialised() {
+    return !isInitialized;
+  }
+
   @Nested
   class TestOrganizationApi extends OrganizationApiTest {
   }

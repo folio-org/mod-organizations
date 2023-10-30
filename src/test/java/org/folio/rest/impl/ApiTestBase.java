@@ -27,17 +27,19 @@ public class ApiTestBase {
   public static final String PATH_SEPARATOR = "/";
   public static final String OKAPI_HEADER_PERMISSIONS = "X-Okapi-Permissions";
 
+  private static boolean runningOnOwn;
+
   @BeforeAll
   public static void globalSetUp() throws InterruptedException, ExecutionException, TimeoutException {
-    if (!isInitialized) {
+    if (TestSuite.isNotInitialised()) {
+      runningOnOwn = true;
       TestSuite.globalSetUp();
     }
   }
 
   @AfterAll
   public static void globalTearDown() {
-    MockServer.release();
-    if (isInitialized) {
+    if (runningOnOwn) {
       TestSuite.globalTearDown();
     }
   }
