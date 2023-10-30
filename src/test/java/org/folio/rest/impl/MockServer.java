@@ -252,6 +252,13 @@ public class MockServer {
       .willReturn(aResponse().withBody(bankingInformation.encode())
         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
         .withStatus(201)));
+
+    wireMockServer.stubFor(get(urlEqualTo(
+      String.format(resourcesPath(BANKING_INFORMATION_ENTITY.getResource()) + SEARCH_PARAMS, 10, 0, buildQuery("id==" + BANKING_INFORMATION_ENTITY.getId()))))
+      .willReturn(aResponse().withBody(BANKING_INFORMATION_ENTITY.getCollection()
+          .encode())
+        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .withStatus(200)));
   }
 
   public static void destroy() {
