@@ -70,4 +70,8 @@ public class TestSuite {
   class TestOrganizationApi extends OrganizationApiTest {
   }
 
+  @Nested
+  class TestBankingInformationAPI extends BankingInformationAPITest {
+  }
+
 }

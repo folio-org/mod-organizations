@@ -3,7 +3,9 @@ package org.folio.rest.impl;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_FULL_PROTECTED_ID;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_READ_ONLY_ID;
 import static org.folio.rest.impl.MockServer.ACQ_UNIT_UPDATE_ONLY_ID;
+import static org.folio.rest.impl.MockServer.BANKING_INFORMATION_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_FULL_PROTECTED_ID;
+import static org.folio.rest.impl.MockServer.ORGANIZATION_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_NO_ACQ_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_READ_ONLY_ID;
 import static org.folio.rest.impl.MockServer.ORGANIZATION_UPDATE_ONLY_ID;
@@ -12,11 +14,14 @@ import static org.folio.rest.impl.MockServer.USER_NO_MEMBERSHIP_ID;
 import static org.folio.rest.impl.MockServer.USER_READ_ONLY_MEMBERSHIP_ID;
 import static org.folio.rest.impl.MockServer.USER_UPDATE_ONLY_MEMBERSHIP_ID;
 import static org.folio.util.ResourcePathResolver.ORGANIZATIONS;
+import static org.folio.util.ResourcePathResolver.BANKING_INFORMATION;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+import org.folio.rest.jaxrs.model.BankingInformation;
+import org.folio.rest.jaxrs.model.BankingInformationCollection;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 
@@ -30,7 +35,9 @@ public enum TestEntities {
   ORGANIZATION_UPDATE_PROTECTED(ORGANIZATION_UPDATE_ONLY_ID, "organizations/organizations", ORGANIZATIONS, getEntity(ACQ_UNIT_UPDATE_ONLY_ID), getEntityCollection(ACQ_UNIT_UPDATE_ONLY_ID), Organization.class, "code",
     "TST-ORG-UPDATE-ACQ", USER_UPDATE_ONLY_MEMBERSHIP_ID),
   ORGANIZATION_FULL_PROTECTED(ORGANIZATION_FULL_PROTECTED_ID, "organizations/organizations", ORGANIZATIONS, getEntity(ACQ_UNIT_FULL_PROTECTED_ID), getEntityCollection(ACQ_UNIT_FULL_PROTECTED_ID), Organization.class, "code",
-    "TST-ORG-FULL-PROTECT", USER_FULL_PROTECTED_MEMBERSHIP_ID);
+    "TST-ORG-FULL-PROTECT", USER_FULL_PROTECTED_MEMBERSHIP_ID),
+  BANKING_INFORMATION_ENTITY(BANKING_INFORMATION_ID, "/organizations/banking-information", BANKING_INFORMATION, getBankingInformation(), getBankingInformationCollection(), BankingInformation.class, "bankName",
+    "New Bank name", USER_NO_MEMBERSHIP_ID);
 
   final String id;
   final String resource;
@@ -61,6 +68,23 @@ public enum TestEntities {
       .withName("Organization")
       .withCode("ORG")
       .withAcqUnitIds(Arrays.stream(acqUnitIds).collect(Collectors.toList())));
+  }
+
+  private static JsonObject getBankingInformation() {
+    return JsonObject.mapFrom(new BankingInformation()
+      .withOrganizationId(ORGANIZATION_ID)
+      .withBankName("BANK NAME")
+      .withBankAccountNumber("12345")
+      .withNotes("test note"));
+  }
+
+  private static JsonObject getBankingInformationCollection() {
+    return JsonObject.mapFrom(new BankingInformationCollection()
+      .withBankingInformation(Collections.singletonList(new BankingInformation().withOrganizationId(ORGANIZATION_ID)
+        .withBankName("BANK NAME")
+        .withBankAccountNumber("12345")
+        .withNotes("test note")))
+      .withTotalRecords(1));
   }
 
   private static JsonObject getEntityCollection(String... acqUnitIds) {

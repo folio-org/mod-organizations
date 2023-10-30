@@ -12,12 +12,14 @@ public class ResourcePathResolver {
   public static final String ACQUISITIONS_MEMBERSHIPS = "acquisitionsMemberships";
   public static final Pattern CQL_SORT_BY_PATTERN = Pattern.compile("(.*)(\\ssortBy\\s.*)", Pattern.CASE_INSENSITIVE);
   public static final String ORGANIZATIONS = "organizations";
+  public static final String BANKING_INFORMATION = "bankingInformation";
   private static final Map<String, String> SUB_OBJECT_ITEM_APIS;
   private static final Map<String, String> SUB_OBJECT_COLLECTION_APIS;
 
   static {
     Map<String, String> apis = new HashMap<>();
     apis.put(ORGANIZATIONS, "/organizations-storage/organizations");
+    apis.put(BANKING_INFORMATION, "/organizations-storage/banking-information");
     apis.put(ACQUISITIONS_UNITS, "/acquisitions-units-storage/units");
     apis.put(ACQUISITIONS_MEMBERSHIPS, "/acquisitions-units-storage/memberships");
 
