@@ -78,7 +78,7 @@ class BankingInformationAPITest extends ApiTestBase {
       verifyGetRequest(endpoint, headers, APPLICATION_JSON, HttpStatus.HTTP_OK.toInt()).getBody()
         .print());
 
-    assertEquals(actual.getInteger("totalRecords"), 1);
+    assertEquals(1, actual.getInteger("totalRecords"));
   }
 
   @Test
