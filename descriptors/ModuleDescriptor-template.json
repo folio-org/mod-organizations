@@ -57,6 +57,52 @@
       ]
     },
     {
+      "id": "banking-information",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": ["GET"],
+          "pathPattern": "/organizations/banking-information",
+          "permissionsRequired": ["organizations.banking-information.collection.get"],
+          "modulePermissions": [
+            "organizations-storage.banking-information.collection.get"
+          ]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/organizations/banking-information",
+          "permissionsRequired": ["organizations.banking-information.item.post"],
+          "modulePermissions": [
+            "organizations-storage.banking-information.item.post"
+          ]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/organizations/banking-information/{id}",
+          "permissionsRequired": ["organizations.banking-information.item.get"],
+          "modulePermissions": [
+            "organizations-storage.banking-information.item.get"
+          ]
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/organizations/banking-information/{id}",
+          "permissionsRequired": ["organizations.banking-information.item.put"],
+          "modulePermissions": [
+            "organizations-storage.banking-information.item.put"
+          ]
+        },
+        {
+          "methods": ["DELETE"],
+          "pathPattern": "/organizations/banking-information/{id}",
+          "permissionsRequired": ["organizations.banking-information.item.delete"],
+          "modulePermissions": [
+            "organizations-storage.banking-information.item.delete"
+          ]
+        }
+      ]
+    },
+    {
       "id": "_jsonSchemas",
       "version": "1.0",
       "interfaceType" : "multiple",
@@ -122,11 +168,49 @@
       ]
     },
     {
+      "permissionName" : "organizations.banking-information.collection.get",
+      "displayName" : "Banking information collection get",
+      "description" : "Get a collection of banking information"
+    },
+    {
+      "permissionName" : "organizations.banking-information.item.post",
+      "displayName" : "Banking information post",
+      "description" : "Create a new banking information"
+    },
+    {
+      "permissionName" : "organizations.banking-information.item.get",
+      "displayName" : "Banking information get",
+      "description" : "Fetch an banking information"
+    },
+    {
+      "permissionName" : "organizations.banking-information.item.put",
+      "displayName" : "Banking information put",
+      "description" : "Update an banking information"
+    },
+    {
+      "permissionName" : "organizations.banking-information.item.delete",
+      "displayName" : "Banking information delete",
+      "description" : "Delete an banking information"
+    },
+    {
+      "permissionName" : "organizations.banking-information.all",
+      "displayName" : "Banking information all",
+      "description" : "All permissions for banking information",
+      "subPermissions" : [
+        "organizations.banking-information.collection.get",
+        "organizations.banking-information.item.post",
+        "organizations.banking-information.item.get",
+        "organizations.banking-information.item.put",
+        "organizations.banking-information.item.delete"
+      ]
+    },
+    {
       "permissionName" : "organizations.module.all",
       "displayName" : "Organizations-module all",
       "description" : "All permissions for the organizations module",
       "subPermissions" : [
-        "organizations.organizations.all"
+        "organizations.organizations.all",
+        "organizations.banking-information.all"
       ]
     }
   ],
