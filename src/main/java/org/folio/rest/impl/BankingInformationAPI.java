@@ -32,6 +32,7 @@ public class BankingInformationAPI extends BaseApi implements OrganizationsBanki
 
   @Override
   public void getOrganizationsBankingInformation(String query, String totalRecords, int offset, int limit, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    logger.debug("Trying to get banking information with query: {}", query);
     bankingInformationService.getBankingInformationCollection(offset, limit, query, vertxContext, okapiHeaders)
       .onSuccess(bankingInformation -> asyncResultHandler.handle(succeededFuture(buildOkResponse(bankingInformation))))
       .onFailure(t -> handleErrorResponse(asyncResultHandler, t));
