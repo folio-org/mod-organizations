@@ -17,12 +17,14 @@ import static org.folio.rest.impl.ApiTestBase.X_OKAPI_TENANT;
 import static org.folio.rest.impl.MockAcqUnits.FULL_PROTECTED;
 import static org.folio.rest.impl.MockAcqUnits.READ_ONLY;
 import static org.folio.rest.impl.MockAcqUnits.UPDATE_ONLY;
+import static org.folio.rest.impl.TestEntities.BANKING_INFORMATION_ENTITY;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_FULL_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_NO_ACQ;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_READ_PROTECTED;
 import static org.folio.rest.impl.TestEntities.ORGANIZATION_UPDATE_PROTECTED;
 import static org.folio.service.organization.OrganizationStorageService.GET_ORGANIZATIONS_BY_QUERY;
 import static org.folio.util.ResourcePathResolver.ACQUISITIONS_UNITS;
+import static org.folio.util.ResourcePathResolver.BANKING_INFORMATION;
 import static org.folio.util.ResourcePathResolver.ORGANIZATIONS;
 import static org.folio.util.ResourcePathResolver.resourceByIdPath;
 import static org.folio.util.ResourcePathResolver.resourcesPath;
@@ -53,6 +55,8 @@ public class MockServer {
   public static final String ORGANIZATION_READ_ONLY_ID = "874225ae-e3f5-4666-ae19-b35709ff0ee9";
   public static final String ORGANIZATION_UPDATE_ONLY_ID = "caa81a86-5829-45b7-b320-ca0d27abf9d5";
   public static final String ORGANIZATION_FULL_PROTECTED_ID = "9985ec57-91cb-4588-9fab-089859a017a5";
+  public static final String BANKING_INFORMATION_ID = "40540ab1-39bf-4684-9a2f-8968ee379d8d";
+  public static final String ORGANIZATION_ID = "a96e55a8-66a8-4d0c-8e8f-f379b207ac84";
   public static final String ID_NOT_FOUND = "f394664e-849d-4213-96c4-2795f772ae3a";
   public static final String ID_INTERNAL_SERVER_ERROR = "96e79e5a-c379-4a5a-8244-d6df0342e21c";
   public static final String ACQ_UNIT_READ_ONLY_ID = "6b982ffe-8efd-4690-8168-0c773b49cde1";
@@ -239,6 +243,21 @@ public class MockServer {
     wireMockServer.stubFor(get(urlForQueryWithAcqUnitClause(EMPTY, FULL_PROTECTED.acqUnitId, READ_ONLY.acqUnitId))
       .willReturn(aResponse().withHeader(CONTENT_TYPE, APPLICATION_JSON)
         .withBody(TestEntities.createCollection(ORGANIZATION_NO_ACQ, ORGANIZATION_READ_PROTECTED, ORGANIZATION_FULL_PROTECTED).encode())
+        .withStatus(200)));
+
+    // stubs for banking information
+    JsonObject bankingInformation = BANKING_INFORMATION_ENTITY.getSample();
+    bankingInformation.put(ID, BANKING_INFORMATION_ENTITY.getId());
+    wireMockServer.stubFor(post(urlEqualTo(resourcesPath(BANKING_INFORMATION)))
+      .willReturn(aResponse().withBody(bankingInformation.encode())
+        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .withStatus(201)));
+
+    wireMockServer.stubFor(get(urlEqualTo(
+      String.format(resourcesPath(BANKING_INFORMATION_ENTITY.getResource()) + SEARCH_PARAMS, 10, 0, buildQuery("id==" + BANKING_INFORMATION_ENTITY.getId()))))
+      .willReturn(aResponse().withBody(BANKING_INFORMATION_ENTITY.getCollection()
+          .encode())
+        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
         .withStatus(200)));
   }
 

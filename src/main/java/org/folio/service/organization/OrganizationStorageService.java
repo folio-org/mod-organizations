@@ -28,7 +28,6 @@ import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
 import org.folio.service.protection.AcquisitionsUnitsService;
 import org.folio.service.protection.ProtectionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.vertx.core.Context;
@@ -40,10 +39,16 @@ public class OrganizationStorageService implements OrganizationService {
   private static final Logger logger = LogManager.getLogger(OrganizationStorageService.class);
   public static final String GET_ORGANIZATIONS_BY_QUERY = resourcesPath(ORGANIZATIONS) + SEARCH_PARAMS;
 
-  private ProtectionService protectionService;
+  private final ProtectionService protectionService;
 
-  private RestClient restClient;
-  private AcquisitionsUnitsService acquisitionsUnitsService;
+  private final RestClient restClient;
+  private final AcquisitionsUnitsService acquisitionsUnitsService;
+
+  public OrganizationStorageService(ProtectionService protectionService, RestClient restClient, AcquisitionsUnitsService acquisitionsUnitsService) {
+    this.protectionService = protectionService;
+    this.restClient = restClient;
+    this.acquisitionsUnitsService = acquisitionsUnitsService;
+  }
 
   @Override
   public Future<Organization> createOrganization(Organization organization, Context context, Map<String, String> headers) {
@@ -120,20 +125,5 @@ public class OrganizationStorageService implements OrganizationService {
     logger.debug("deleteOrganizationById:: Trying to delete organization by id: {}", id);
     RequestContext requestContext = new RequestContext(context, headers);
     return restClient.delete(resourceByIdPath(ORGANIZATIONS, id), requestContext);
-  }
-
-  @Autowired
-  public void setProtectionService(ProtectionService protectionService) {
-    this.protectionService = protectionService;
-  }
-
-  @Autowired
-  public void setRestClient(RestClient restClient) {
-    this.restClient = restClient;
-  }
-
-  @Autowired
-  public void setAcquisitionsUnitsService(AcquisitionsUnitsService acquisitionsUnitsService) {
-    this.acquisitionsUnitsService = acquisitionsUnitsService;
   }
 }

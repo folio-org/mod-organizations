@@ -1,0 +1,66 @@
+#%RAML 1.0
+
+title: Banking information
+baseUri: https://github.com/folio-org/mod-organizations
+version: v1.0
+protocols: [ HTTP, HTTPS ]
+
+documentation:
+  - title: Banking information Logic API
+    content: <b>API for banking information</b>
+
+types:
+  banking_information: !include acq-models/mod-orgs/schemas/banking_information.json
+  banking_information_collection: !include acq-models/mod-orgs/schemas/banking_information_collection.json
+  errors: !include raml-util/schemas/errors.schema
+  UUID:
+    type: string
+    pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+
+traits:
+  pageable: !include raml-util/traits/pageable.raml
+  searchable: !include raml-util/traits/searchable.raml
+  validate: !include raml-util/traits/validation.raml
+
+resourceTypes:
+  collection: !include raml-util/rtypes/collection-with-json-response.raml
+  collection-item: !include raml-util/rtypes/item-collection-with-json-response.raml
+
+/organizations/banking-information:
+    type:
+      collection:
+        exampleCollection: !include acq-models/mod-orgs/examples/banking_information_collection.sample
+        exampleItem: !include acq-models/mod-orgs/examples/banking_information_post.sample
+        schemaCollection: banking_information_collection
+        schemaItem: banking_information
+    is: [validate]
+    get:
+      description: Get a list of banking information
+      is: [
+          searchable: { description: "CQL query", example: "bankName=TRC" },
+          pageable
+      ]
+    post:
+      description: Create a banking information
+      is: [ validate ]
+    /{id}:
+      uriParameters:
+        id:
+          description: The UUID of a banking information
+          type: UUID
+      type:
+        collection-item:
+          exampleItem: !include acq-models/mod-orgs/examples/banking_information_get.sample
+          schema: banking_information
+      is: [validate]
+      put:
+        description: Update a banking information by id
+        body:
+          application/json:
+            example:
+              strict: false
+              value: !include acq-models/mod-orgs/examples/banking_information_post.sample
+            type: banking_information
+      delete:
+        description: Delete a banking information by id
+        is: [ validate ]

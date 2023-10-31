@@ -76,7 +76,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPostInternalServerError(TestEntities e) {
     logger.info("===== Verify POST " + e.name() + ": Internal Server Error =====");
 
@@ -90,7 +91,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPostWithAccountNumberDuplicate(TestEntities e) {
     logger.info("===== Verify POST " + e.name() + ": Account number must be unique =====");
 
@@ -148,7 +150,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testGetByIdNotFound(TestEntities e) {
     logger.info("===== Verify GET by ID " + e.name() + ": Not Found =====");
 
@@ -202,7 +205,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testGetByQueryWithAppropriateMembership(TestEntities e) {
     logger.info("===== Verify GET by ID " + e.name() + ": Successful =====");
 
@@ -262,7 +266,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testGetByQueryInternalServerError(TestEntities e) {
     logger.info("===== Verify GET by query " + e.name() + ": Internal Server Error =====");
 
@@ -287,7 +292,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPutByIdNoAcqChangesMatchingMembership(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + " without acq. units change: Successful =====");
 
@@ -303,7 +309,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPutByIdAcqChangesMatchingMembershipAndManagePermissions(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + " with acq. units change and manage permissions: Successful =====");
 
@@ -320,7 +327,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPutByIdAcqChangesMatchingMembershipNoManagePermissions(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + " with acq. units change and no manage permissions: Forbidden =====");
 
@@ -353,7 +361,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPutIdMismatchTest(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + ": ID Mismatch =====");
 
@@ -370,7 +379,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPutWithAccountNumberDuplicate(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + ": Account number must be unique =====");
 
@@ -385,7 +395,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPutWithoutIdTest(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + ": ID missed =====");
 
@@ -408,7 +419,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPutNotFound(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + ": Not Found =====");
 
@@ -422,7 +434,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testPutInternalServerError(TestEntities e) {
     logger.info("===== Verify PUT by ID " + e.name() + ": Internal Server Error =====");
 
@@ -436,7 +449,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testDeleteOrganizationById(TestEntities e) {
     logger.info("===== Verify DELETE by ID " + e.name() + ": Successful =====");
 
@@ -447,7 +461,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testDeleteNotFound(TestEntities e) {
     logger.info("===== Verify DELETE by ID " + e.name() + ": Not Found =====");
 
@@ -458,7 +473,8 @@ class OrganizationApiTest extends ApiTestBase {
   }
 
   @ParameterizedTest
-  @EnumSource(TestEntities.class)
+  @EnumSource(value = TestEntities.class, names = {"ORGANIZATION_NO_ACQ", "ORGANIZATION_READ_PROTECTED",
+    "ORGANIZATION_UPDATE_PROTECTED", "ORGANIZATION_FULL_PROTECTED"})
   void testDeleteInternalServerError(TestEntities e) {
     logger.info("===== Verify DELETE by ID " + e.name() + ": Internal Server Error =====");
 
