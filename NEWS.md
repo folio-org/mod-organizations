@@ -1,4 +1,19 @@
-## 1.8.0 - Unreleased
+## 1.9.0 - Unreleased
+
+## 1.8.0 - Released (Poppy R2 2023)
+
+The primary focus of this release was to update ram-util and java version to 17
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.7.0...v1.8.0)
+
+### Stories
+* [FOLIO-3678](https://issues.folio.org/browse/FOLIO-3678) - Use GitHub Workflows api-lint and api-schema-lint and api-doc
+* [MODORG-51](https://issues.folio.org/browse/MODORG-51) -  Update mod-organization md required interface section
+* [MODORG-49](https://issues.folio.org/browse/MODORG-49) - Updated to java-17
+* [MODORG-46](https://issues.folio.org/browse/MODORG-46) - Update dependent raml-util
+
+### Dependencies
+* Bump `java version` from `11` to `17`
 
 ## 1.7.0 - Released (Orchid R1 2023)
 The primary focus of this release was to replace old HTTP Clients with Vertx WebClient and improvement Logging

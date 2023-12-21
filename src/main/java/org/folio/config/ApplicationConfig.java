@@ -1,6 +1,8 @@
 package org.folio.config;
 
 import org.folio.rest.client.RestClient;
+import org.folio.service.organization.BankingInformationService;
+import org.folio.service.organization.BankingInformationServiceImpl;
 import org.folio.service.organization.OrganizationService;
 import org.folio.service.organization.OrganizationStorageService;
 import org.folio.service.protection.AcquisitionsUnitsService;
@@ -13,8 +15,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ApplicationConfig {
   @Bean
-  public OrganizationService organizationService() {
-    return new OrganizationStorageService();
+  public OrganizationService organizationService(ProtectionService protectionService, RestClient restClient,
+                                                 AcquisitionsUnitsService acquisitionUnitsService) {
+    return new OrganizationStorageService(protectionService, restClient, acquisitionUnitsService);
+  }
+
+  @Bean
+  public BankingInformationService bankingInformationService(RestClient restClient) {
+    return new BankingInformationServiceImpl(restClient);
   }
 
   @Bean
