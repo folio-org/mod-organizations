@@ -27,8 +27,8 @@
 
     <!--Dependency properties-->
     <aspectj.version>1.9.20.1</aspectj.version>
-    <raml-module-builder.version>35.1.0</raml-module-builder.version>
-    <vertx.version>4.4.5</vertx.version>
+    <raml-module-builder.version>35.1.1</raml-module-builder.version>
+    <vertx.version>4.4.6</vertx.version>
     <junit.jupiter.version>5.10.0</junit.jupiter.version>
     <rest-assured.version>5.3.2</rest-assured.version>
     <folio-di-support.version>2.0.1</folio-di-support.version>
@@ -41,7 +41,7 @@
     <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
     <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
     <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
-    <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
+    <properties-maven-plugin.version>1.2.0</properties-maven-plugin.version>
     <jsonschema2pojo-maven-plugin.version>1.0.2</jsonschema2pojo-maven-plugin.version>
     <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
     <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
