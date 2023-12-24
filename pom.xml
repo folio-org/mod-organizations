@@ -14,20 +14,39 @@
   </licenses>
 
   <properties>
-    <aspectj.version>1.9.19</aspectj.version>
-    <raml-module-builder.version>35.0.1</raml-module-builder.version>
-    <vertx.version>4.3.4</vertx.version>
-    <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <rest-assured.version>5.1.1</rest-assured.version>
-    <log4j-slf4j-impl.version>2.19.0</log4j-slf4j-impl.version>
-    <folio-di-support.version>1.6.0</folio-di-support.version>
-    <wiremock.version>2.26.3</wiremock.version>
-    <jsonschema_paths>acq-models/mod-orgs/schemas,raml-util/schemas,acq-models/common/schemas,acq-models/acquisitions-unit/schemas</jsonschema_paths>
+    <!--Project properties-->
+    <java.version>17</java.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <generated_sources_dir>${project.build.directory}/generated-sources</generated_sources_dir>
     <jsonschema2pojo_output_dir>${generated_sources_dir}/jsonschema2pojo</jsonschema2pojo_output_dir>
-    <log4j.version>2.17.2</log4j.version>
+    <jsonschema_paths>acq-models/mod-orgs/schemas,raml-util/schemas,acq-models/common/schemas,acq-models/acquisitions-unit/schemas</jsonschema_paths>
+
+    <!--Dependency Management Properties-->
+    <log4j.version>2.20.0</log4j.version>
+
+    <!--Dependency properties-->
+    <aspectj.version>1.9.20.1</aspectj.version>
+    <raml-module-builder.version>35.1.1</raml-module-builder.version>
+    <vertx.version>4.4.6</vertx.version>
+    <junit.jupiter.version>5.10.0</junit.jupiter.version>
+    <rest-assured.version>5.3.2</rest-assured.version>
+    <folio-di-support.version>2.0.1</folio-di-support.version>
+    <wiremock.version>2.26.3</wiremock.version>
+
+    <!--Maven plugin properties-->
+    <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
+    <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
+    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+    <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+    <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
+    <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
+    <properties-maven-plugin.version>1.2.0</properties-maven-plugin.version>
+    <jsonschema2pojo-maven-plugin.version>1.0.2</jsonschema2pojo-maven-plugin.version>
+    <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
+    <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
+    <build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
+    <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
 
     <argLine />
   </properties>
@@ -115,9 +134,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <release>17</release>
+          <release>${java.version}</release>
           <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
@@ -125,7 +144,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
-        <version>1.0.0</version>
+        <version>${properties-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>set-system-properties</id>
@@ -147,7 +166,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <argLine>@{argLine} -Duser.language=en -Duser.region=US</argLine>
           <excludes>
@@ -163,7 +182,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>${build-helper-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>add_generated_sources_folder</id>
@@ -183,7 +202,7 @@
       <plugin>
         <groupId>org.jsonschema2pojo</groupId>
         <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-        <version>1.0.2</version>
+        <version>${jsonschema2pojo-maven-plugin.version}</version>
         <configuration>
           <includes>
             <include>*.json</include>
@@ -220,7 +239,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>${exec-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>git submodule update</id>
@@ -244,10 +263,10 @@
       <plugin>
         <groupId>dev.aspectj</groupId>
         <artifactId>aspectj-maven-plugin</artifactId>
-        <version>1.13.1</version>
+        <version>${aspectj-maven-plugin.version}</version>
         <configuration>
           <verbose>true</verbose>
-          <complianceLevel>17</complianceLevel>
+          <complianceLevel>${java.version}</complianceLevel>
           <XaddSerialVersionUID>true</XaddSerialVersionUID>
           <showWeaveInfo>true</showWeaveInfo>
           <forceAjcCompile>true</forceAjcCompile>
@@ -282,7 +301,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>${maven-resources-plugin.version}</version>
         <executions>
           <execution>
             <id>copy-resources</id>
@@ -323,7 +342,7 @@
       <plugin>
         <groupId>com.coderplus.maven.plugins</groupId>
         <artifactId>copy-rename-maven-plugin</artifactId>
-        <version>1.0.1</version>
+        <version>${copy-rename-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>rename-descriptor-outputs</id>
@@ -350,7 +369,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>${maven-antrun-plugin.version}</version>
         <executions>
           <execution>
             <!-- Replace the baseUri in the RAMLs that have been copied to
@@ -373,7 +392,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
+        <version>${maven-shade-plugin.version}</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -415,7 +434,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.3</version>
+        <version>${maven-release-plugin.version}</version>
         <configuration>
           <preparationGoals>clean verify</preparationGoals>
           <tagNameFormat>v@{project.version}</tagNameFormat>
