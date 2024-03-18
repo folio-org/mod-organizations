@@ -1,4 +1,21 @@
-## 1.9.0 - Unreleased
+## 2.0.0 - Unreleased
+
+## 1.9.0 - Released (Quesnelia R1 2024)
+
+The primary focus of this release was to update ram-util and java version to 17
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.8.0...v1.9.0)
+
+### Stories
+* [MODORG-61](https://folio-org.atlassian.net/browse/MODORG-61) - mod-organizations: Upgrade RAML Module Builder
+* [MODORG-60](https://folio-org.atlassian.net/browse/MODORG-60) - Support searching by bankAccountNumber
+* [MODORG-59](https://folio-org.atlassian.net/browse/MODORG-59) - BE - Introduce 'isDonor' indicator for organizations
+* [MODORG-56](https://folio-org.atlassian.net/browse/MODORG-56) - Update RMB and vertx to the latest version
+* [MODORG-54](https://folio-org.atlassian.net/browse/MODORG-54) - BE - Banking information fields edit and delete
+
+### Dependencies
+* Bump `raml` from `35.1.1` to `35.2.0`
+* Bump `vertx` from `4.3.4` to `4.5.4`
 
 ## 1.8.0 - Released (Poppy R2 2023)
 
