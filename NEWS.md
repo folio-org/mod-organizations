@@ -2,7 +2,7 @@
 
 ## 1.9.0 - Released (Quesnelia R1 2024)
 
-The primary focus of this release was to update ram-util and java version to 17
+The primary focus of this release was to update rmb, vertx and improving fields of tables
 
 [Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.8.0...v1.9.0)
 
