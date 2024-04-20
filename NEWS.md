@@ -1,5 +1,14 @@
 ## 2.0.0 - Unreleased
 
+## 1.9.1 - Released (Quesnelia R1 2024)
+
+The primary focus of this release was to fix issue with declaring missing acq units permissions
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.9.0...v1.9.1)
+
+### Bug Fixes
+* [MODORG-63](https://folio-org.atlassian.net/browse/MODORG-63) - Permission: organizations.acquisitions-units-assignments.manage referenced but not defined
+
 ## 1.9.0 - Released (Quesnelia R1 2024)
 
 The primary focus of this release was to update rmb, vertx and improving fields of tables
