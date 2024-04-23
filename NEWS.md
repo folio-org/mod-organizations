@@ -1,5 +1,14 @@
 ## 2.0.0 - Unreleased
 
+## 1.9.2 - Released (Quesnelia R1 2024)
+
+The primary focus of this release was to fix issue with missing interfaces dependencies in module descriptor
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.9.1...v1.9.2)
+
+### Bug Fixes
+* [MODORG-64](https://folio-org.atlassian.net/browse/MODORG-64) - Missing interface dependencies in module descriptor
+
 ## 1.9.1 - Released (Quesnelia R1 2024)
 
 The primary focus of this release was to fix issue with declaring missing acq units permissions
