@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-organizations</artifactId>
-  <version>1.9.2</version>
+  <version>1.9.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <licenses>
@@ -451,7 +451,7 @@
     <url>https://github.com/folio-org/mod-quick-marc</url>
     <connection>scm:git:git://github.com/folio-org/mod-quick-marc</connection>
     <developerConnection>scm:git:git@github.com:folio-org/mod-quick-marc.git</developerConnection>
-    <tag>v1.9.2</tag>
+    <tag>v1.9.0</tag>
   </scm>
 
   <repositories>
