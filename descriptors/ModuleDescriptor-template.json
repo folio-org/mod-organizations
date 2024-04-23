@@ -127,6 +127,10 @@
     {
       "id": "acquisitions-units-storage.memberships",
       "version": "1.0"
+    },
+    {
+      "id": "organizations-storage.banking-information",
+      "version": "1.0"
     }
   ],
   "permissionSets": [
