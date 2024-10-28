@@ -1,4 +1,19 @@
-## 2.0.0 - Unreleased
+## 2.1.0 - Unreleased
+
+## 2.0.0 - Released (Ramson R1 2025)
+The primary focus of this release was to update dependencies and improving module dependencies
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.9.0...v2.0.0)
+
+### Stories
+* [MODORG-68](https://folio-org.atlassian.net/browse/MODORG-68) - Update libraries of dependant acq modules to the latest versions
+* [MODORG-64](https://folio-org.atlassian.net/browse/MODORG-64) - permission: organizations.acquisitions-units-assignments.manage referenced but not defined
+* [MODORG-63](https://folio-org.atlassian.net/browse/MODORG-63) - Missing interface dependencies in module descriptor
+
+### Dependencies
+* Bump `raml` from `35.2.0` to `35.3.0`
+* Added `folio-module-descriptor-validator` version `1.0.0`
+
 
 ## 1.9.0 - Released (Quesnelia R1 2024)
 
