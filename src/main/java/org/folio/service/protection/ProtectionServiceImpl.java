@@ -53,8 +53,13 @@ public class ProtectionServiceImpl implements ProtectionService {
   @Override
   public Future<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, Context context, Map<String, String> headers) {
     logger.debug("checkOperationsRestrictions:: Trying to check operation restrictions by unitIds: {} and '{}' operations", unitIds, operations.size());
-    if (CollectionUtils.isNotEmpty(unitIds)) {
-      return getUnitsByIds(unitIds, context, headers)
+
+    if (CollectionUtils.isEmpty(unitIds)) {
+      logger.debug("checkOperationsRestrictions:: unitIds is empty");
+      return Future.succeededFuture();
+    }
+
+    return getUnitsByIds(unitIds, context, headers)
         .compose(units -> {
           if (unitIds.size() == units.size()) {
             logger.info("checkOperationsRestrictions:: equal unitIds size '{}' and fetched units size '{}'", unitIds.size(), units.size());
@@ -70,10 +75,6 @@ public class ProtectionServiceImpl implements ProtectionService {
           }
           return Future.succeededFuture();
         });
-    } else {
-      logger.warn("checkOperationsRestrictions:: unitIds is empty");
-      return Future.succeededFuture();
-    }
   }
 
   @Override
