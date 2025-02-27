@@ -14,8 +14,11 @@
   </licenses>
 
   <properties>
+    <java.version>21</java.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+
     <!--Project properties-->
-    <java.version>17</java.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <generated_sources_dir>${project.build.directory}/generated-sources</generated_sources_dir>
@@ -28,10 +31,10 @@
     <!--Dependency properties-->
     <aspectj.version>1.9.22.1</aspectj.version>
     <raml-module-builder.version>35.3.0</raml-module-builder.version>
-    <vertx.version>4.5.10</vertx.version>
+    <vertx.version>4.5.13</vertx.version>
     <junit.jupiter.version>5.11.2</junit.jupiter.version>
     <rest-assured.version>5.5.0</rest-assured.version>
-    <folio-di-support.version>2.1.0</folio-di-support.version>
+    <folio-di-support.version>2.2.0</folio-di-support.version>
     <wiremock.version>3.0.1</wiremock.version>
 
     <!--Folio dependencies properties-->
@@ -39,15 +42,15 @@
 
     <!--Maven plugin properties-->
     <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
-    <exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
+    <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
     <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
     <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
     <jsonschema2pojo-maven-plugin.version>1.2.2</jsonschema2pojo-maven-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
-    <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
+    <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
     <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
 
@@ -139,7 +142,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <release>${java.version}</release>
+          <release>17</release>
           <encoding>UTF-8</encoding>
           <parameters>true</parameters>
         </configuration>
