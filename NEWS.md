@@ -1,6 +1,24 @@
-## 2.1.0 - Unreleased
+## 2.2.0 - Unreleased
 
-## 2.0.0 - Released (Ramson R1 2025)
+## 2.1.0 - Released (Sunflower R1 2025)
+The primary focus of this release was to update dependencies including Java 21 upgrade
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v2.0.0...v2.1.0)
+
+### Stories
+* [MODORG-75](https://folio-org.atlassian.net/browse/MODORG-75) - Misleading warning "checkOperationsRestrictions:: unitIds is empty"
+* [FOLIO-4202](https://folio-org.atlassian.net/browse/FOLIO-4202) - Update to mod-organizations Java 21
+
+### Dependencies
+* Bump `java` from `17` to `21`
+* Bump `raml` from `35.3.0` to `35.4.0`
+* Bump `vertx` from `4.5.10` to `4.5.13`
+* Bump `log4j` from `2.24.1` to `2.24.3`
+* Bump `rest-assured` from `5.5.0` to `5.5.1`
+* Bump `folio-di-support` from `2.1.0` to `3.0.0`
+* Bump test dependencies and maven plugins to the latest versions
+
+## 2.0.0 - Released (Ramsons R2 2024)
 The primary focus of this release was to update dependencies and improving module dependencies
 
 [Full Changelog](https://github.com/folio-org/mod-organizations/compare/v1.9.0...v2.0.0)
