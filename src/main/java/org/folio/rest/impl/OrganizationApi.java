@@ -9,6 +9,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.rest.annotations.Validate;
 import org.folio.rest.jaxrs.model.Organization;
 import org.folio.rest.jaxrs.resource.Organizations;
 import org.folio.service.organization.OrganizationService;
@@ -33,6 +34,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
   }
 
   @Override
+  @Validate
   public void getOrganizationsOrganizations(String query, String totalRecords, int offset, int limit, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     organizationService.getOrganizationCollection(offset, limit, query, vertxContext, okapiHeaders)
       .onSuccess(organizations -> asyncResultHandler.handle(succeededFuture(buildOkResponse(organizations))))
@@ -40,6 +42,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
   }
 
   @Override
+  @Validate
   public void postOrganizationsOrganizations(Organization entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to create organization with name: {}", entity.getName());
@@ -50,6 +53,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
   }
 
   @Override
+  @Validate
   public void getOrganizationsOrganizationsById(String id, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to get organization with id: {}", id);
@@ -59,6 +63,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
   }
 
   @Override
+  @Validate
   public void putOrganizationsOrganizationsById(String id, Organization entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to update organization with id: {}", id);
@@ -68,6 +73,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
   }
 
   @Override
+  @Validate
   public void deleteOrganizationsOrganizationsById(String id, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to delete organization by id: {}", id);

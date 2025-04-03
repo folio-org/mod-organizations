@@ -5,6 +5,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
+import org.folio.rest.annotations.Validate;
 import org.folio.rest.jaxrs.model.BankingInformation;
 import org.folio.rest.jaxrs.resource.OrganizationsBankingInformation;
 
@@ -31,6 +32,7 @@ public class BankingInformationAPI extends BaseApi implements OrganizationsBanki
   }
 
   @Override
+  @Validate
   public void getOrganizationsBankingInformation(String query, String totalRecords, int offset, int limit, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to get banking information with query: {}", query);
     bankingInformationService.getBankingInformationCollection(offset, limit, query, vertxContext, okapiHeaders)
@@ -39,6 +41,7 @@ public class BankingInformationAPI extends BaseApi implements OrganizationsBanki
   }
 
   @Override
+  @Validate
   public void postOrganizationsBankingInformation(BankingInformation entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to create banking information with id: {}", entity.getId());
@@ -49,6 +52,7 @@ public class BankingInformationAPI extends BaseApi implements OrganizationsBanki
   }
 
   @Override
+  @Validate
   public void putOrganizationsBankingInformationById(String id, BankingInformation entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to update banking information with id: {}", id);
     bankingInformationService.updateBankingInformation(id, entity, vertxContext, okapiHeaders)
@@ -57,6 +61,7 @@ public class BankingInformationAPI extends BaseApi implements OrganizationsBanki
   }
 
   @Override
+  @Validate
   public void deleteOrganizationsBankingInformationById(String id, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to delete banking information by id: {}", id);
     bankingInformationService.deleteBankingInformation(id, vertxContext, okapiHeaders)
@@ -65,6 +70,7 @@ public class BankingInformationAPI extends BaseApi implements OrganizationsBanki
   }
 
   @Override
+  @Validate
   public void getOrganizationsBankingInformationById(String id, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.debug("Trying to get banking information with id: {}", id);
     bankingInformationService.getBankingInformationById(id, vertxContext, okapiHeaders)
