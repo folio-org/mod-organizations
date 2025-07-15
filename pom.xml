@@ -26,7 +26,7 @@
     <jsonschema_paths>acq-models/mod-orgs/schemas,raml-util/schemas,acq-models/common/schemas,acq-models/acquisitions-unit/schemas</jsonschema_paths>
 
     <!--Dependency Management Properties-->
-    <log4j.version>2.25.0</log4j.version>
+    <log4j.version>2.25.1</log4j.version>
 
     <!--Dependency properties-->
     <aspectj.version>1.9.24</aspectj.version>
