@@ -14,10 +14,7 @@ import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.exception.HttpException;
 
-import io.vertx.ext.web.client.predicate.ErrorConverter;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import one.util.streamex.StreamEx;
 
 public class RestUtils {
@@ -34,9 +31,6 @@ public class RestUtils {
 
   private RestUtils() {}
 
-  public static final ErrorConverter ERROR_CONVERTER = ErrorConverter.createFullBody(
-    result -> new HttpException(result.response().statusCode(), result.response().bodyAsString()));
-  public static final ResponsePredicate SUCCESS_RESPONSE_PREDICATE = ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, ERROR_CONVERTER);
 
   public static String buildQuery(String query) {
     return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query);

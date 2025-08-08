@@ -45,7 +45,7 @@ public class TestSuite {
 
     final DeploymentOptions opt = new DeploymentOptions().setConfig(conf);
     Promise<String> deploymentComplete = Promise.promise();
-    vertx.deployVerticle(RestVerticle.class.getName(), opt, res -> {
+    vertx.deployVerticle(RestVerticle.class.getName(), opt).onComplete(res -> {
       if (res.succeeded()) {
         deploymentComplete.complete(res.result());
       } else {
