@@ -26,7 +26,7 @@
     <jsonschema_paths>acq-models/mod-orgs/schemas,raml-util/schemas,acq-models/common/schemas,acq-models/acquisitions-unit/schemas</jsonschema_paths>
 
     <!--Dependency Management Properties-->
-    <log4j.version>2.25.0</log4j.version>
+    <log4j.version>2.25.1</log4j.version>
 
     <!--Dependency properties-->
     <aspectj.version>1.9.24</aspectj.version>
@@ -35,7 +35,7 @@
     <junit.jupiter.version>5.12.0</junit.jupiter.version>
     <rest-assured.version>5.5.1</rest-assured.version>
     <wiremock.version>3.0.1</wiremock.version>
-    <streamex.version>0.8.3</streamex.version>
+    <streamex.version>0.8.4</streamex.version>
 
     <!--Folio dependencies properties-->
     <folio-module-descriptor-validator.version>1.0.1</folio-module-descriptor-validator.version>
