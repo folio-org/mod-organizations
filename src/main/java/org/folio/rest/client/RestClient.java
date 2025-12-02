@@ -114,7 +114,7 @@ public class RestClient {
       .mapEmpty();
   }
 
-  protected static <T> Future<HttpResponse<T>> convertHttpResponse(HttpResponse<T> response) {
+  private static <T> Future<HttpResponse<T>> convertHttpResponse(HttpResponse<T> response) {
     return HttpResponseExpectation.SC_SUCCESS.test(response)
       ? Future.succeededFuture(response)
       : Future.failedFuture(new HttpException(response.statusCode(), response.bodyAsString()));
