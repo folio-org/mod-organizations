@@ -14,13 +14,13 @@ import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.exception.HttpException;
 
-import io.vertx.ext.web.client.predicate.ErrorConverter;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
+import lombok.experimental.UtilityClass;
 import one.util.streamex.StreamEx;
 
+@UtilityClass
 public class RestUtils {
+
   public static final String SEARCH_PARAMS = "?limit=%s&offset=%s%s";
   public static final String ID = "id";
   public static final String ACQUISITIONS_UNIT_ID = "acquisitionsUnitId";
@@ -31,12 +31,6 @@ public class RestUtils {
   public static final String NO_ACQ_UNIT_ASSIGNED_CQL = "cql.allRecords=1 not " + ACQUISITIONS_UNIT_IDS + " <> []";
   public static final String GET_UNITS_BY_QUERY = resourcesPath(ACQUISITIONS_UNITS) + SEARCH_PARAMS;
   public static final String GET_UNITS_MEMBERSHIPS_BY_QUERY = resourcesPath(ACQUISITIONS_MEMBERSHIPS) + SEARCH_PARAMS;
-
-  private RestUtils() {}
-
-  public static final ErrorConverter ERROR_CONVERTER = ErrorConverter.createFullBody(
-    result -> new HttpException(result.response().statusCode(), result.response().bodyAsString()));
-  public static final ResponsePredicate SUCCESS_RESPONSE_PREDICATE = ResponsePredicate.create(ResponsePredicate.SC_SUCCESS, ERROR_CONVERTER);
 
   public static String buildQuery(String query) {
     return isEmpty(query) ? EMPTY : "&query=" + encodeQuery(query);
@@ -82,4 +76,5 @@ public class RestUtils {
     String prefix = fieldName + (strictMatch ? "==(" : "=(");
     return StreamEx.of(values).joining(" or ", prefix, ")");
   }
+
 }

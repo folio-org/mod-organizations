@@ -30,8 +30,8 @@
 
     <!--Dependency properties-->
     <aspectj.version>1.9.24</aspectj.version>
-    <raml-module-builder.version>35.4.0</raml-module-builder.version>
-    <vertx.version>4.5.13</vertx.version>
+    <raml-module-builder.version>36.0.0-SNAPSHOT</raml-module-builder.version>
+    <vertx.version>5.0.5</vertx.version>
     <junit.jupiter.version>5.12.0</junit.jupiter.version>
     <rest-assured.version>5.5.1</rest-assured.version>
     <wiremock.version>3.0.1</wiremock.version>
@@ -290,6 +290,10 @@
           <XaddSerialVersionUID>true</XaddSerialVersionUID>
           <showWeaveInfo>true</showWeaveInfo>
           <forceAjcCompile>true</forceAjcCompile>
+          <includes>
+            <include>**/impl/*.java</include>
+            <include>**/*.aj</include>
+          </includes>
           <aspectLibraries>
             <aspectLibrary>
               <groupId>org.folio</groupId>
