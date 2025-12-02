@@ -13,10 +13,10 @@ import io.vertx.core.Vertx;
 public class InitAPIs implements InitAPI {
   @Override
   public void init(Vertx vertx, Context context, Handler<AsyncResult<Boolean>> handler) {
-    vertx.executeBlocking(future -> {
+    vertx.executeBlocking(() -> {
       SpringContextUtil.init(vertx, context, ApplicationConfig.class);
-      future.complete();
-    }, result -> {
+      return true;
+    }).onComplete(result -> {
       if (result.succeeded()) {
         handler.handle(Future.succeededFuture(true));
       } else {
