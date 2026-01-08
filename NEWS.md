@@ -1,5 +1,15 @@
 ## 2.1.0 - Unreleased
 
+## 2.0.1 - Released (Ramson R1 2025 Bug Fix)
+The primary focus of this release was to implement RMB logging improvements and security fixes
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v2.0.0...v2.0.1)
+
+### Stories
+* [MODORG-94](https://folio-org.atlassian.net/browse/MODORG-94) - Ramsons CSP - RMB 35.3.2 Vertx 4.5.23 fixing CVE-2025-67735 netty CRLF
+* [MODORG-92](https://folio-org.atlassian.net/browse/MODORG-92) - Ramsons CSP - RMB Logging release - RMB 35.3.1
+
+
 ## 2.0.0 - Released (Ramson R1 2025)
 The primary focus of this release was to update dependencies and improving module dependencies
 
