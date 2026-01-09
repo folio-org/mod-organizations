@@ -30,8 +30,8 @@
 
     <!--Dependency properties-->
     <aspectj.version>1.9.22.1</aspectj.version>
-    <raml-module-builder.version>35.4.0</raml-module-builder.version>
-    <vertx.version>4.5.13</vertx.version>
+    <raml-module-builder.version>35.4.2</raml-module-builder.version>
+    <vertx.version>4.5.23</vertx.version>
     <junit.jupiter.version>5.12.0</junit.jupiter.version>
     <rest-assured.version>5.5.1</rest-assured.version>
     <wiremock.version>3.0.1</wiremock.version>
