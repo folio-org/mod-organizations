@@ -1,5 +1,14 @@
 ## 2.2.0 - Unreleased
 
+## 2.1.1 - Released (Sunflower R1 2025)
+The primary focus of the release was to update to RMB 35.4.2 and Vertx 4.5.23
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v2.1.0...v2.1.1)
+
+### Stories
+* [MODORG-93](https://folio-org.atlassian.net/browse/MODORG-93) - Sunflower CSP - RMB Logging release - RMB 35.4.2 Vertx 4.5.23
+
+
 ## 2.1.0 - Released (Sunflower R1 2025)
 The primary focus of this release was to update dependencies including Java 21 upgrade
 
