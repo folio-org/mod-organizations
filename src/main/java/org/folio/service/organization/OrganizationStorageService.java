@@ -52,11 +52,11 @@ public class OrganizationStorageService implements OrganizationService {
 
   @Override
   public Future<Organization> createOrganization(Organization organization, Context context, Map<String, String> headers) {
-    logger.debug("createOrganization:: Trying to create organization with name: {}", organization.getName());
+    logger.debug("createOrganization:: Trying to create organization");
     RequestContext requestContext = new RequestContext(context, headers);
 
     if (isSameAccountNumbers(organization)) {
-      logger.warn("crateOrganization:: Account number of organization '{}' is not unique", organization.getName());
+      logger.warn("createOrganization:: Account number of organization '{}' is not unique", organization.getName());
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
