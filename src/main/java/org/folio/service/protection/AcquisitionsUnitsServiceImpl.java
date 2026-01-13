@@ -52,13 +52,11 @@ public class AcquisitionsUnitsServiceImpl implements AcquisitionsUnitsService {
 
   @Override
   public Future<AcquisitionsUnitMembershipCollection> getAcquisitionsUnitsMemberships(String query, int offset, int limit, Context context, Map<String, String> headers) {
-    logger.debug(
-      "getAcquisitionsUnitsMemberships:: Trying to get acquisition units memberships with query: {}, offset: {}, limit: {}", query,
-      offset, limit);
+    logger.debug("getAcquisitionsUnitsMemberships:: Trying to get acquisition units memberships with query: {}, offset: {}, limit: {}", query, offset, limit);
     RequestContext requestContext = new RequestContext(context, headers);
     String endpoint = String.format(GET_UNITS_MEMBERSHIPS_BY_QUERY, limit, offset, buildQuery(query));
     return restClient.get(endpoint, AcquisitionsUnitMembershipCollection.class, requestContext)
-      .onFailure(t -> logger.warn("getAcquisitionsUnitsMemberships:: Error getting acquisition units memberships by endpoint: {}", endpoint, t));
+      .onFailure(t -> logger.warn("getAcquisitionsUnitsMemberships:: Error getting acquisition units memberships", t));
 
   }
 

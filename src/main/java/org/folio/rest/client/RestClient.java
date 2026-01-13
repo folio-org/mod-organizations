@@ -34,9 +34,6 @@ public class RestClient {
   public <T> Future<T> post(T recordData, String endpoint, Class<T> responseType,
                             RequestContext requestContext) {
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
-    if (log.isDebugEnabled()) {
-      log.debug("Trying to create object by endpoint '{}' and body '{}'", endpoint, JsonObject.mapFrom(recordData).encodePrettily());
-    }
     return getVertxWebClient(requestContext.getContext())
       .postAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint)).putHeaders(caseInsensitiveHeader)
       .sendJson(recordData)
@@ -47,7 +44,7 @@ public class RestClient {
           .put(ID, id)
           .mapTo(responseType);
       })
-      .onFailure(t -> log.error("Object could not be created with using endpoint: {} and body: {}", endpoint, JsonObject.mapFrom(recordData).encodePrettily(), t));
+      .onFailure(t -> log.error("Object could not be created", t));
   }
 
   /**
@@ -56,21 +53,14 @@ public class RestClient {
    * @return future jsonObject of created entity Record or an exception if failed
    */
   public <T> Future<T> get(String endpoint, Class<T> responseType, RequestContext requestContext) {
-    log.debug("Calling GET {}", endpoint);
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
-
     return getVertxWebClient(requestContext.getContext())
       .getAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
       .putHeaders(caseInsensitiveHeader)
       .send()
       .compose(RestClient::convertHttpResponse)
       .map(HttpResponse::bodyAsJsonObject)
-      .map(jsonObject -> {
-        if (log.isDebugEnabled()) {
-          log.debug("Successfully retrieved: {}", jsonObject.encodePrettily());
-        }
-        return jsonObject.mapTo(responseType);
-      });
+      .map(jsonObject -> jsonObject.mapTo(responseType));
   }
 
   /**
@@ -81,11 +71,7 @@ public class RestClient {
    */
   public <T> Future<Void> put(String endpoint, T dataObject, RequestContext requestContext) {
     var recordData = JsonObject.mapFrom(dataObject);
-    if (log.isDebugEnabled()) {
-      log.debug("Sending 'PUT {}' with body: {}", endpoint, recordData.encodePrettily());
-    }
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
-
     return getVertxWebClient(requestContext.getContext())
       .putAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
       .putHeaders(caseInsensitiveHeader)
@@ -102,15 +88,12 @@ public class RestClient {
    */
   public Future<Void> delete(String endpoint, RequestContext requestContext) {
     var caseInsensitiveHeader = convertToCaseInsensitiveMap(requestContext.getHeaders());
-    if (log.isDebugEnabled()) {
-      log.debug("Trying to delete object with endpoint: {}", endpoint);
-    }
     return getVertxWebClient(requestContext.getContext())
       .deleteAbs(buildAbsEndpoint(caseInsensitiveHeader, endpoint))
       .putHeaders(caseInsensitiveHeader)
       .send()
       .compose(RestClient::convertHttpResponse)
-      .onFailure(t -> log.error("Object cannot be deleted with using endpoint: {}", endpoint, t))
+      .onFailure(t -> log.error("Object cannot be deleted", t))
       .mapEmpty();
   }
 

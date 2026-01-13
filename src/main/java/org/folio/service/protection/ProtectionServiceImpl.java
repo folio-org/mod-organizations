@@ -79,7 +79,7 @@ public class ProtectionServiceImpl implements ProtectionService {
 
   @Override
   public Future<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, Context context, Map<String, String> headers) {
-    logger.debug("validateAcqUnitsOnUpdate:: Trying to verify acquisition units for updating between updateOrg '{}' and currentOrg '{}'", updatedOrg, currentOrg);
+    logger.debug("validateAcqUnitsOnUpdate:: Trying to verify acquisition units for updating between current entity and incoming payload");
     List<String> updatedAcqUnitIds = updatedOrg.getAcqUnitIds();
     List<String> currentAcqUnitIds = currentOrg.getAcqUnitIds();
 
