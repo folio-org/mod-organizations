@@ -56,7 +56,7 @@ public class OrganizationStorageService implements OrganizationService {
     RequestContext requestContext = new RequestContext(context, headers);
 
     if (isSameAccountNumbers(organization)) {
-      logger.warn("createOrganization:: Account number of organization is not unique, id: {}", organization.getId());
+      logger.warn("createOrganization:: Account number of organization '{}' is not unique", organization.getName());
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
