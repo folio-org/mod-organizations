@@ -45,7 +45,7 @@ public class OrganizationApi extends BaseApi implements Organizations {
   @Validate
   public void postOrganizationsOrganizations(Organization entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    logger.debug("Trying to create organization, id: {}", entity.getId());
+    logger.debug("Trying to create organization");
     organizationService.createOrganization(entity, vertxContext, okapiHeaders)
       .onSuccess(organization -> asyncResultHandler.handle(succeededFuture(buildResponseWithLocation(okapiHeaders.get(OKAPI_URL),
           String.format(ORGANIZATIONS_LOCATION_PREFIX, organization.getId()), organization))))
