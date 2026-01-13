@@ -44,7 +44,7 @@ public class RestClient {
           .put(ID, id)
           .mapTo(responseType);
       })
-      .onFailure(t -> log.error("Object could not be created", t));
+      .onFailure(t -> log.error("Object could not be created with using endpoint: {}", endpoint, t));
   }
 
   /**
@@ -93,7 +93,7 @@ public class RestClient {
       .putHeaders(caseInsensitiveHeader)
       .send()
       .compose(RestClient::convertHttpResponse)
-      .onFailure(t -> log.error("Object cannot be deleted", t))
+      .onFailure(t -> log.error("Object cannot be deleted with using endpoint: {}", endpoint, t))
       .mapEmpty();
   }
 
