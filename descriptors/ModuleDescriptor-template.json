@@ -38,7 +38,7 @@
           "methods": ["PUT"],
           "pathPattern": "/organizations/organizations/{id}",
           "permissionsRequired": ["organizations.organizations.item.put"],
-          "permissionsDesired": ["organizations.acquisitions-units-assignments.manage"],
+          "permissionsDesired": ["organizations.acquisitions-units-assignments.manage.execute"],
           "modulePermissions": [
             "organizations-storage.organizations.item.get",
             "organizations-storage.organizations.item.put",
@@ -209,22 +209,24 @@
       ]
     },
     {
-      "permissionName": "organizations.acquisitions-units-assignments.assign",
+      "permissionName": "organizations.acquisitions-units-assignments.create.execute",
       "displayName": "Acquisitions unit assignment - create unit assignment",
-      "description": "Assign new organization to acquisitions units"
+      "description": "Assign new organization to acquisitions units",
+      "replaces": ["organizations.acquisitions-units-assignments.assign"]
     },
     {
-      "permissionName": "organizations.acquisitions-units-assignments.manage",
+      "permissionName": "organizations.acquisitions-units-assignments.manage.execute",
       "displayName": "Acquisitions units assignment - manage unit assignments",
-      "description": "Manage unit assignments during organizations update"
+      "description": "Manage unit assignments during organizations update",
+      "replaces": ["organizations.acquisitions-units-assignments.manage"]
     },
     {
       "permissionName": "organizations.acquisitions-units-assignments.all",
       "displayName": "All organization acquisitions-unit-assignments permissions",
       "description": "All permissions for the acquisitions-unit-assignments",
       "subPermissions": [
-        "organizations.acquisitions-units-assignments.assign",
-        "organizations.acquisitions-units-assignments.manage"
+        "organizations.acquisitions-units-assignments.create.execute",
+        "organizations.acquisitions-units-assignments.manage.execute"
       ]
     },
     {
