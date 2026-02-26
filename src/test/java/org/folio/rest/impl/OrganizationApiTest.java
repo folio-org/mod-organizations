@@ -54,7 +54,7 @@ class OrganizationApiTest extends ApiTestBase {
   private static final List<TestEntities> openForReadEntities = Arrays.asList(ORGANIZATION_NO_ACQ, ORGANIZATION_READ_PROTECTED);
   private static final List<TestEntities> openForUpdateEntities = Arrays.asList(ORGANIZATION_NO_ACQ, ORGANIZATION_UPDATE_PROTECTED);
   private static final List<TestEntities> fullProtectedEntities = Collections.singletonList(ORGANIZATION_FULL_PROTECTED);
-  private static final String MANAGE_PERMISSIONS = "organizations.acquisitions-units-assignments.manage";
+  private static final String MANAGE_PERMISSIONS = "organizations.acquisitions-units-assignments.manage.execute";
 
   @Test
   void testPost() {
