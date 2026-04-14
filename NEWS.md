@@ -1,4 +1,20 @@
-## 2.2.0 - Unreleased
+## 2.2.0 - Released (Trillium R1 2025)
+The primary focus of this release was to upgrade to Vert.x 5.0, improve security and update libraries of dependent acquisition modules.
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v2.1.0...v2.2.0)
+
+### Stories
+* [MODORG-95](https://folio-org.atlassian.net/browse/MODORG-95) - Update GitHub Workflows for Maven
+* [MODORG-90](https://folio-org.atlassian.net/browse/MODORG-90) - Upgrade module to Vert.x 5.0
+* [MODORG-87](https://folio-org.atlassian.net/browse/MODORG-87) - Setup dependabot for your module
+* [MODORG-82](https://folio-org.atlassian.net/browse/MODORG-82) - Sensitive data in logs cleanup
+
+### Dependencies
+* Bump `raml-module-builder` from `35.4.0` to `36.0.0`
+* Bump `vertx` from `4.5.13` to `5.0.8`
+* Bump `log4j` from `2.24.3` to `2.25.3`
+* Bump `junit-jupiter` from `5.12.0` to `6.0.3`
+* Bump `rest-assured` from `5.5.1` to `6.0.0`
 
 ## 2.1.0 - Released (Sunflower R1 2025)
 The primary focus of this release was to update dependencies including Java 21 upgrade
