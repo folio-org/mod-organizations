@@ -8,7 +8,6 @@ The primary focus of this release was to upgrade to Vert.x 5.0, improve security
 * [MODORG-90](https://folio-org.atlassian.net/browse/MODORG-90) - Upgrade module to Vert.x 5.0
 * [MODORG-87](https://folio-org.atlassian.net/browse/MODORG-87) - Setup dependabot for your module
 * [MODORG-82](https://folio-org.atlassian.net/browse/MODORG-82) - Sensitive data in logs cleanup
-* [MODORG-34](https://folio-org.atlassian.net/browse/MODORG-34) - Updated models + REST API validation
 
 ### Dependencies
 * Bump `raml-module-builder` from `35.4.0` to `36.0.0`
