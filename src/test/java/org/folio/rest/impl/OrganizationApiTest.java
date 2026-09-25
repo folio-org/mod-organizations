@@ -35,9 +35,13 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.HttpStatus;
+import org.folio.rest.jaxrs.model.Organization;
+import org.folio.rest.jaxrs.model.Organization.Status;
 import org.folio.rest.jaxrs.model.OrganizationCollection;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -45,6 +49,7 @@ import com.github.tomakehurst.wiremock.http.RequestMethod;
 
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -104,6 +109,20 @@ class OrganizationApiTest extends ApiTestBase {
 
     assertThat(MockServer.getInstance()
       .getAllServeEvents(), hasSize(0));
+  }
+
+  @ParameterizedTest
+  @CsvSource(value = {"' ABC'", "'XYZ '"})
+  void testPostWithCodeStartingWithSpace(String code) {
+    logger.info("===== Verify POST with code '" + code + "' starting with space =====");
+
+    var org = new Organization().withName("name").withStatus(Status.ACTIVE).withCode(code);
+
+    verifyPostRequest(ORGANIZATION_NO_ACQ.getUrl(), Json.encode(org), APPLICATION_JSON,
+        HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt())
+    .then()
+    .body("errors[0].message", Matchers.is("Organization code must not start or end with whitespace"))
+    .body("errors[0].code", Matchers.is("organizationCodeWhitespace"));
   }
 
   @ParameterizedTest

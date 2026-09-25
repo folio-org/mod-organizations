@@ -1,6 +1,7 @@
 package org.folio.service.protection;
 
 import static org.folio.config.Constants.EMPTY_ARRAY;
+import static org.folio.exception.ErrorCodes.ORGANIZATION_CODE_WHITESPACE;
 import static org.folio.exception.ErrorCodes.ORGANIZATION_UNITS_NOT_FOUND;
 import static org.folio.exception.ErrorCodes.USER_HAS_NO_ACQ_PERMISSIONS;
 import static org.folio.exception.ErrorCodes.USER_HAS_NO_PERMISSIONS;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.HttpStatus;
@@ -78,7 +80,12 @@ public class ProtectionServiceImpl implements ProtectionService {
   }
 
   @Override
-  public Future<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, Context context, Map<String, String> headers) {
+  public Future<Void> validateOnUpdate(Organization updatedOrg, Organization currentOrg, Context context, Map<String, String> headers) {
+    return validateAcqUnitsOnUpdate(updatedOrg, currentOrg, context, headers)
+        .compose(x -> validateCode(updatedOrg, currentOrg));
+  }
+
+  private Future<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, Context context, Map<String, String> headers) {
     logger.debug("validateAcqUnitsOnUpdate:: Trying to verify acquisition units for updating between current entity and incoming payload");
     List<String> updatedAcqUnitIds = updatedOrg.getAcqUnitIds();
     List<String> currentAcqUnitIds = currentOrg.getAcqUnitIds();
@@ -86,6 +93,25 @@ public class ProtectionServiceImpl implements ProtectionService {
     verifyUserHasManagePermission(updatedAcqUnitIds, currentAcqUnitIds, getProvidedPermissions(headers));
     return verifyIfUnitsAreActive(ListUtils.subtract(updatedAcqUnitIds, currentAcqUnitIds), context, headers)
       .compose(ok -> checkOperationsRestrictions(currentAcqUnitIds, Collections.singleton(UPDATE), context, headers));
+  }
+
+  @Override
+  public Future<Void> validateCode(Organization organization) {
+    var code = organization.getCode();
+    if (StringUtils.trim(code).length() == code.length()) {
+      return Future.succeededFuture();
+    }
+    return Future.failedFuture(new HttpException(
+        HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(), ORGANIZATION_CODE_WHITESPACE));
+  }
+
+  private Future<Void> validateCode(Organization updatedOrg, Organization currentOrg) {
+    if (StringUtils.equals(updatedOrg.getCode(), currentOrg.getCode())) {
+      // to avoid a breaking change and to avoid migration we allow to keep an existing code
+      // that violates the rule "must not start or end with whitespace"
+      return Future.succeededFuture();
+    }
+    return validateCode(updatedOrg);
   }
 
   private Future<List<AcquisitionsUnit>> getUnitsByIds(List<String> unitIds, Context context, Map<String, String> headers) {
