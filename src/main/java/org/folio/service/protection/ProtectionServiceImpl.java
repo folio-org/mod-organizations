@@ -97,8 +97,8 @@ public class ProtectionServiceImpl implements ProtectionService {
 
   @Override
   public Future<Void> validateCode(Organization organization) {
-    @Nonnull var code = StringUtils.defaultString(organization.getCode());
-    if (StringUtils.trim(code).length() == code.length()) {
+    var code = StringUtils.defaultString(organization.getCode());
+    if (StringUtils.trimToEmpty(code).length() == code.length()) {
       return Future.succeededFuture();
     }
     return Future.failedFuture(new HttpException(
