@@ -114,7 +114,7 @@ class OrganizationApiTest extends ApiTestBase {
   @ParameterizedTest
   @CsvSource(value = {"' ABC'", "'XYZ '"})
   void testPostWithCodeStartingWithSpace(String code) {
-    logger.info("===== Verify POST with code '" + code + "' starting with space =====");
+    logger.info("===== Verify POST with code '{}' starting with space =====", code);
 
     var org = new Organization().withName("name").withStatus(Status.ACTIVE).withCode(code);
 
