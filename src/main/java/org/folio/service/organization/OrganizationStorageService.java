@@ -91,8 +91,8 @@ public class OrganizationStorageService implements OrganizationService {
     RequestContext requestContext = new RequestContext(context, headers);
     return acquisitionsUnitsService.buildAcqUnitsCqlClause(query, offset, limit, context, headers)
       .compose(clause -> {
-        var finalQuery = StringUtils.isEmpty(query) ? buildQuery(clause) : buildQuery(combineCqlExpressions("and", clause, query));
-        var endpoint = String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, finalQuery);
+        var finalQuery = StringUtils.isEmpty(query) ? clause : combineCqlExpressions("and", clause, query);
+        var endpoint = String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(finalQuery));
         return restClient.get(endpoint, OrganizationCollection.class, requestContext);
       })
       .onFailure( t -> logger.warn("Error loading organization collection with query: {}, offset: {}, limit: {}", query, offset, limit, t));

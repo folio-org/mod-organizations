@@ -18,10 +18,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import javax.annotation.Nonnull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -98,7 +97,7 @@ public class ProtectionServiceImpl implements ProtectionService {
 
   @Override
   public Future<Void> validateCode(Organization organization) {
-    var code = StringUtils.defaultString(organization.getCode());
+    @Nonnull var code = StringUtils.defaultString(organization.getCode());
     if (StringUtils.trim(code).length() == code.length()) {
       return Future.succeededFuture();
     }
