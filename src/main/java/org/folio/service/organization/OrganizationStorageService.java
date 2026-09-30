@@ -60,7 +60,8 @@ public class OrganizationStorageService implements OrganizationService {
       return Future.failedFuture(new HttpException(HttpStatus.HTTP_UNPROCESSABLE_ENTITY.toInt(),
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
-    return restClient.post(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext);
+    return protectionService.validateCode(organization)
+        .compose(x -> restClient.post(organization, resourcesPath(ORGANIZATIONS), Organization.class, requestContext));
   }
 
   private boolean isSameAccountNumbers(Organization organization) {
@@ -90,9 +91,8 @@ public class OrganizationStorageService implements OrganizationService {
     RequestContext requestContext = new RequestContext(context, headers);
     return acquisitionsUnitsService.buildAcqUnitsCqlClause(query, offset, limit, context, headers)
       .compose(clause -> {
-        String endpoint = StringUtils.isEmpty(query) ?
-          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(clause)) :
-          String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(combineCqlExpressions("and", clause, query)));
+        var finalQuery = StringUtils.isEmpty(query) ? clause : combineCqlExpressions("and", clause, query);
+        var endpoint = String.format(GET_ORGANIZATIONS_BY_QUERY, limit, offset, buildQuery(finalQuery));
         return restClient.get(endpoint, OrganizationCollection.class, requestContext);
       })
       .onFailure( t -> logger.warn("Error loading organization collection with query: {}, offset: {}, limit: {}", query, offset, limit, t));
@@ -116,7 +116,7 @@ public class OrganizationStorageService implements OrganizationService {
         ACCOUNT_NUMBER_MUST_BE_UNIQUE.toError()));
     }
     return restClient.get(resourceByIdPath(ORGANIZATIONS, id), Organization.class, requestContext)
-      .compose(existingOrganization -> protectionService.validateAcqUnitsOnUpdate(updatedOrganization, existingOrganization, context, headers)
+      .compose(existingOrganization -> protectionService.validateOnUpdate(updatedOrganization, existingOrganization, context, headers)
       .compose(ok -> restClient.put(resourceByIdPath(ORGANIZATIONS, updatedOrganization.getId()), updatedOrganization, requestContext)));
   }
 

@@ -11,5 +11,6 @@ import io.vertx.core.Future;
 
 public interface ProtectionService {
   Future<Void> checkOperationsRestrictions(List<String> unitIds, Set<ProtectedOperationType> operations, Context context, Map<String, String> headers);
-  Future<Void> validateAcqUnitsOnUpdate(Organization updatedOrg, Organization currentOrg, Context context, Map<String, String> headers);
+  Future<Void> validateOnUpdate(Organization updatedOrg, Organization currentOrg, Context context, Map<String, String> headers);
+  Future<Void> validateCode(Organization organization);
 }
