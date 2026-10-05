@@ -2,6 +2,7 @@
 
 ### Stories
 * [MODORG-99](https://folio-org.atlassian.net/browse/MODORG-99) - Reject new organization code that starts or end with whitespace
+* [MODORG-98](https://folio-org.atlassian.net/browse/MODORG-98) - Upgrade from Java 21 to Java 25
 
 ## 2.2.0 - Released (Trillium R1 2025)
 The primary focus of this release was to upgrade to Vert.x 5.0, improve security and update libraries of dependent acquisition modules.
