@@ -1,5 +1,5 @@
 {
-  "description": "Deployment configuration for mod-organizations.",
+  "description": "Deployment configuration for mod-organizations. Default values are calibrated against a reference bugfest environment (tebfcon-mod-organizations revision 14)",
   "moduleDefaults": {
     "resources": [
       {
