@@ -114,13 +114,6 @@
         "essential": true
       },
       {
-        "name": "JAVA_OPTS",
-        "value": null,
-        "description": "Additional JVM options for the sidecar process",
-        "type": "CONFIG",
-        "essential": false
-      },
-      {
         "name": "MODULE_NAME",
         "value": "mod-organizations",
         "description": "Name of the module this sidecar fronts",
