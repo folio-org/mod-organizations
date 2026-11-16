@@ -1,4 +1,12 @@
-## 2.2.0 - Released (Trillium R1 2025)
+## 2.2.1 - Released (Trillium R1 2026 Bug Fix)
+The primary focus of this release was to add DeployConfig.json file.
+
+[Full Changelog](https://github.com/folio-org/mod-organizations/compare/v2.2.0...v2.2.1)
+
+### Stories
+* [MODORG-97](https://folio-org.atlassian.net/browse/MODORG-97) - Add DeployConfig.json to mod-organizations
+
+## 2.2.0 - Released (Trillium R1 2026)
 The primary focus of this release was to upgrade to Vert.x 5.0, improve security and update libraries of dependent acquisition modules.
 
 [Full Changelog](https://github.com/folio-org/mod-organizations/compare/v2.1.0...v2.2.0)
